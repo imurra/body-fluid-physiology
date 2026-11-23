@@ -2,7 +2,7 @@
 
 Interactive case activity on a live fluid compartment (Darrow–Yannet) diagram.
 
-Purpose: the amount of sodium sets ECF volume (circulation); its concentration, with glucose, sets serum osmolality (cells, brain first). Each case gives the diagnosis; students work out what it does to the fluid compartments.
+Purpose: the amount of sodium sets ECF volume (circulation); its concentration, with glucose, sets serum osmolality (cells, brain first). Each case gives the diagnosis by name; students work out what it does to the fluid compartments.
 
 An opening screen states the purpose and how to read the diagram. Each case then has five steps:
 1. ECF volume (decreased, normal, increased) from vital signs and exam. The change lands in the ECF first; the diagram changes ECF width only.
@@ -13,10 +13,7 @@ An opening screen states the purpose and how to read the diagram. Each case then
 
 Scored out of 8 per case. Each step has a Reset button; only the first answer is scored. There is no treatment step.
 
-4 core cases: diarrhea, SIADH (small cell lung carcinoma), heart failure (HFrEF), HHS.
-Extra practice (optional, not yet clinician-reviewed; reached from the "Extra practice" button or the end of case 4): marathon runner, Addison's, elderly dehydration, lithium DI.
-
-`card.html` is a printable one-page summary of the six volume–osmolality states, linked from the Reference page.
+4 cases: acute infectious diarrhea; SIADH from small cell lung carcinoma; acute decompensated HFrEF; HHS. Each gives the full diagnosis name; the mechanism is held for the feedback and case summary.
 `index.html` is self-contained and works offline.
 
 ## Source

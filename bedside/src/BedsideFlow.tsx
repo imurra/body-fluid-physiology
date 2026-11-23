@@ -7,18 +7,14 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { BASE, labs, run } from './engine';
 import { CASES, Case, Vol } from './cases';
 
-const CARD_URL = 'card.html';
 const TITLE = 'Body Fluids at the Bedside';
 const STEPS = ['ECF volume', 'Osmolality', 'Cells', 'Kidney', 'Causal chain'];
 const NORMAL = 290;                         // serum osmolality, mOsm/kg
 const OSM_LO = 275, OSM_HI = 295;           // reference range
 const DIRWORD: Record<-1 | 0 | 1, string> = { [-1]: 'low', 0: 'normal', 1: 'high' };
 const VOLWORD: Record<Vol, string> = { dry: 'decreased', euvolemic: 'normal', wet: 'increased' };
-// Core cases come first in CASES; the rest are optional extra practice.
-const CORE = CASES.filter(k => !k.optional).length;
-const caseLabel = (i: number) => i < CORE
-  ? `Case ${i + 1} of ${CORE}`
-  : `Extra practice ${i - CORE + 1} of ${CASES.length - CORE} · not yet clinician-reviewed`;
+const CORE = CASES.length;
+const caseLabel = (i: number) => `Case ${i + 1} of ${CORE}`;
 const OSM_SNAPS: Record<-1 | 0 | 1, number> = { [-1]: 250, 0: NORMAL, 1: 330 };
 
 type Snap = -1 | 0 | 1;
@@ -215,12 +211,8 @@ const SOURCES: { text: string; url: string }[] = [
 // Plain-language background on each condition (MedlinePlus, US National Library of Medicine)
 const LEARN: Record<string, { text: string; url: string }> = {
   diarrhea: { text: 'Dehydration', url: 'https://medlineplus.gov/ency/article/000982.htm' },
-  marathon: { text: 'Low blood sodium', url: 'https://medlineplus.gov/ency/article/000394.htm' },
   siadh: { text: 'SIADH', url: 'https://medlineplus.gov/ency/article/000314.htm' },
   hf: { text: 'Heart failure', url: 'https://medlineplus.gov/heartfailure.html' },
-  addison: { text: 'Acute adrenal crisis', url: 'https://medlineplus.gov/ency/article/000357.htm' },
-  dehydration: { text: 'Dehydration', url: 'https://medlineplus.gov/ency/article/000982.htm' },
-  di: { text: 'Nephrogenic diabetes insipidus', url: 'https://medlineplus.gov/ency/article/000511.htm' },
   hhs: { text: 'Hyperglycemic hyperosmolar syndrome', url: 'https://medlineplus.gov/ency/article/000304.htm' },
 };
 
@@ -237,8 +229,6 @@ function Reference({ onClose }: { onClose: () => void }) {
   return (
     <section className="panel refpage" aria-label="Reference">
       <div className="row"><h2 style={{ margin: 0 }}>Reference</h2><span className="spacer" style={{ flex: 1 }} /><button className="linkbtn" onClick={onClose}>Back to the case</button></div>
-
-      <p><a href={CARD_URL}>Summary card: the six volume–osmolality states</a> (printable, one page).</p>
 
       <h3>Serum osmolality</h3>
       <ul>
@@ -274,7 +264,7 @@ function Reference({ onClose }: { onClose: () => void }) {
       <table className="reftable"><thead><tr><th>Case</th><th>What happened</th><th>Learn more</th></tr></thead><tbody>
         {CASES.map((k, i) => {
           const more = LEARN[k.id];
-          return <tr key={k.id} className={k.optional ? 'optrow' : undefined}><td>{k.optional ? `Optional ${i - CORE + 1}` : i + 1}. {k.title}</td><td>{k.debrief.what}</td><td>{more && <a href={more.url} target="_blank" rel="noopener">{more.text}</a>}</td></tr>;
+          return <tr key={k.id}><td>{i + 1}. {k.title}</td><td>{k.debrief.what}</td><td>{more && <a href={more.url} target="_blank" rel="noopener">{more.text}</a>}</td></tr>;
         })}
       </tbody></table>
 
@@ -310,7 +300,6 @@ export default function BedsideFlow() {
   const [flash, setFlash] = useState(0);
   const [history, setHistory] = useState<Record<string, Result>>({});
   const [showRef, setShowRef] = useState(false);
-  const [showExtra, setShowExtra] = useState(false);
   const [shift, setShift] = useState<'before' | 'after'>('after');   // cells step: before or after water moves
   const timer = useRef<number>();
   const playShift = () => {
@@ -398,17 +387,9 @@ export default function BedsideFlow() {
         <label className="casepick">
           <span>Case</span>
           <select id="case-select" value={ci} onChange={e => { start(); setShowRef(false); reset(Number(e.target.value)); }}>
-            {CASES.map((k, i) => !k.optional && <option key={k.id} value={i}>{i + 1}. {k.title}</option>)}
-            {c.optional && <option value={ci} disabled>Extra: {c.title}</option>}
+            {CASES.map((k, i) => <option key={k.id} value={i}>{i + 1}. {k.title}</option>)}
           </select>
         </label>
-        <div className="extrapick">
-          <button className="linkbtn" aria-expanded={showExtra} onClick={() => setShowExtra(x => !x)}>Extra practice (optional)</button>
-          {showExtra && <div className="extramenu">
-            <p className="hint">Not yet reviewed by clinicians. About 5 min each.</p>
-            {CASES.map((k, i) => k.optional && <button key={k.id} className="ghostbtn small" onClick={() => { setShowExtra(false); setShowRef(false); start(); reset(i); }}>{k.title}</button>)}
-          </div>}
-        </div>
       </header>
 
       <ol className="progress" aria-label="Steps">
@@ -436,7 +417,7 @@ export default function BedsideFlow() {
       <div className="layout" hidden={showRef || showIntro}>
         <section className="panel" aria-live="polite">
           <div className="story">
-            <div className={c.optional ? 'eyebrow opt' : 'eyebrow'}>{caseLabel(ci)}</div>
+            <div className="eyebrow">{caseLabel(ci)}</div>
             <h2>{c.title}</h2>
             <p>{c.story}</p>
             <p className="dx"><b>Diagnosis:</b> {c.dx}</p>
@@ -582,7 +563,7 @@ export default function BedsideFlow() {
           )}
 
           {step === 4 && (() => {
-            const done = Object.keys({ ...history, [c.id]: result }).filter(id => CASES.some(k => k.id === id && !k.optional)).length;
+            const done = Object.keys({ ...history, [c.id]: result }).length;
             return (
               <div className="stepbox">
                 <h3>5 · Causal chain</h3>
@@ -635,14 +616,9 @@ export default function BedsideFlow() {
                   <ul className="tally">
                     {SCORED.map(([k, label]) => <li key={k} className={result[k] ? 'y' : result[k] === false ? 'n' : ''}>{label}</li>)}
                   </ul>
-                  <p className="hint">{done} of {CORE} core cases done.</p>
-                  {ci === CORE - 1 && <div className="extras">
-                    <p><b>End of the core cases.</b> Extra practice (optional, about 5 min each; not yet reviewed by clinicians):</p>
-                    <div className="row">{CASES.map((k, i) => k.optional && <button key={k.id} className="ghostbtn small" onClick={() => reset(i)}>{k.title}</button>)}</div>
-                  </div>}
+                  <p className="hint">{done} of {CORE} cases done.</p>
                   <div className="row">
                     {ci < CORE - 1 && <button className="primary" onClick={() => reset(ci + 1)}>Next case</button>}
-                    {ci >= CORE && ci < CASES.length - 1 && <button className="ghostbtn" onClick={() => reset(ci + 1)}>Next optional case</button>}
                   </div>
                 </>}
               </div>

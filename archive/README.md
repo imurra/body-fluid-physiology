@@ -14,6 +14,6 @@ It also used fixed 75/25 volume splits rather than mass balance.
 
 `bedside-2026-11-06-treatment/` is the version with treatment, the mechanism question and the reason question, replaced the same evening by the version without treatment.
 
-`bedside-2026-11-23/` is the version reviewed by a clinician in November 2026 (danger step, tonicity, "read backward" card), replaced by the revision that opens with the purpose, gives each diagnosis, uses serum osmolality and groups simultaneous causal-chain links.
+`bedside-2026-11-23/` is the version reviewed by a clinician in November 2026 (danger step, tonicity, "read backward" card), replaced by the revision that opens with the purpose, gives each diagnosis, uses serum osmolality and groups simultaneous causal-chain links. The revision also removed the one-page card and the four optional cases (marathon, Addison's, elderly dehydration, lithium DI); both remain in `bedside-2026-11-23/`.
 
 Nothing in `archive/` is published to GitHub Pages (see `_config.yml`).

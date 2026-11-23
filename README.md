@@ -12,8 +12,7 @@ Opening screen with the purpose, then five steps per case (diagnosis given):
 4. Kidney (water, salt, appropriate or contributing)
 5. Causal chain and case summary
 
-4 core cases: diarrhea, SIADH, heart failure, HHS.
-Extra practice (optional, not yet clinician-reviewed; separate from the case menu): marathon runner, Addison's, elderly dehydration, lithium DI.
+4 cases: diarrhea, SIADH, heart failure, HHS.
 `bedside/index.html` is self-contained and works offline.
 
 ## Hosting
