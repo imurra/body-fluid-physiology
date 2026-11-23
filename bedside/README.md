@@ -22,6 +22,6 @@ Scored out of 8 per case. Each step has a Reset button; only the first answer is
 - `src/BedsideFlow.tsx` — React interface
 - `src/styles.css` — styles (light and dark)
 
-Teaching model: 42 L body water; osmolality shown in mOsm/kg (1 L ≈ 1 kg); urine values are illustrative.
+Teaching model: 42 L body water; osmolality shown in mOsm/kg (1 L ≈ 1 kg). Urine cutoffs follow Spasovski et al. 2014; HHS values meet the 2024 consensus criteria. The diagram shows only patient values: ECF volume as examined, serum osmolality as measured; cells start at normal and then match the serum.
 
 © 2026 Ian V. J. Murray · CC BY-NC-SA 4.0

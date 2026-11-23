@@ -163,12 +163,12 @@ const RefRanges = () => (
 const UrineGuide = () => (
   <>
     <table className="reftable"><tbody>
-      <tr><td>U<sub>osm</sub> above plasma (&gt; 290)</td><td>Retaining water (ADH present)</td></tr>
-      <tr><td>U<sub>osm</sub> &lt; 100</td><td>Excreting water (ADH absent or not working)</td></tr>
-      <tr><td>U<sub>Na</sub> &lt; 20 mEq/L</td><td>Retaining salt (the kidney senses low perfusion)</td></tr>
-      <tr><td>U<sub>Na</sub> &gt; 20 mEq/L</td><td>Excreting salt</td></tr>
+      <tr><td>U<sub>osm</sub> ≤ 100 mOsm/kg</td><td>Excreting water: maximally dilute urine (ADH suppressed or not acting)</td></tr>
+      <tr><td>U<sub>osm</sub> &gt; 100 mOsm/kg</td><td>Retaining water: ADH is acting</td></tr>
+      <tr><td>U<sub>Na</sub> ≤ 30 mEq/L</td><td>Retaining salt: the kidney senses low effective volume</td></tr>
+      <tr><td>U<sub>Na</sub> &gt; 30 mEq/L</td><td>Excreting salt (normal volume, diuretics, or renal salt loss)</td></tr>
     </tbody></table>
-    <p className="hint">Exception: a large amount of glucose in the urine raises urine osmolality while the kidney is losing water (osmotic diuresis).</p>
+    <p className="hint">Cutoffs from the European hyponatraemia guideline (Spasovski et al., 2014). Exception: a large amount of glucose in the urine raises urine osmolality while the kidney is losing water (osmotic diuresis).</p>
   </>
 );
 
@@ -205,6 +205,7 @@ const SOURCES: { text: string; url: string }[] = [
   { text: 'Spasovski G, et al. Clinical practice guideline on diagnosis and treatment of hyponatraemia. Eur J Endocrinol 2014;170:G1–G47', url: 'https://doi.org/10.1530/EJE-13-1020' },
   { text: 'Verbalis JG, et al. Diagnosis, evaluation, and treatment of hyponatremia: expert panel recommendations. Am J Med 2013;126:S1–S42', url: 'https://doi.org/10.1016/j.amjmed.2013.07.006' },
   { text: 'Adrogué HJ, Madias NE. Hypernatremia. N Engl J Med 2000;342:1493–1499', url: 'https://doi.org/10.1056/NEJM200005183422006' },
+  { text: 'Umpierrez GE, et al. Hyperglycemic crises in adults with diabetes: a consensus report. Diabetes Care 2024;47:1257–1275', url: 'https://doi.org/10.2337/dci24-0032' },
   { text: 'Joint British Diabetes Societies. Management of the hyperosmolar hyperglycaemic state (HHS) in adults', url: 'https://www.rcemlearning.co.uk/reference/hyperosmolar-hyperglycaemic-state/' },
 ];
 
@@ -234,7 +235,7 @@ function Reference({ onClose }: { onClose: () => void }) {
       <ul>
         <li>Calculated osmolality = 2 × Na⁺ + glucose/18 + BUN/2.8 (glucose and BUN in mg/dL). The laboratory also measures it directly.</li>
         <li>Na⁺ (with its anions) accounts for most of it, so Na⁺ usually tracks osmolality. Very high glucose is the exception: Na⁺ can be low while osmolality is high.</li>
-        <li>Urea crosses cell membranes, so it raises osmolality without moving water. BUN is normal in these cases.</li>
+        <li>Urea crosses cell membranes, so it raises osmolality on both sides equally and does not move water. BUN is raised in cases 1 and 4.</li>
       </ul>
       <RefRanges />
 
@@ -269,7 +270,7 @@ function Reference({ onClose }: { onClose: () => void }) {
       </tbody></table>
 
       <h3>Teaching model</h3>
-      <p>42 L total body water (ICF 28 L, ECF 14 L). Na⁺ salts and glucose stay in the ECF; ICF solute is fixed; urea spreads through all body water. Osmolality is shown in mOsm/kg, taking 1 L of body water as 1 kg. Urine values are illustrative. This is a teaching tool, not a guide to treatment.</p>
+      <p>42 L total body water (ICF 28 L, ECF 14 L). Na⁺ salts and glucose stay in the ECF; ICF solute is fixed; urea spreads through all body water. Osmolality is shown in mOsm/kg, taking 1 L of body water as 1 kg. Urine values are typical values chosen to match the guideline cutoffs. This is a teaching tool, not a guide to treatment.</p>
 
       <h3>Sources</h3>
       <ol className="sources">{SOURCES.map(x => <li key={x.url}><a href={x.url} target="_blank" rel="noopener">{x.text}</a></li>)}</ol>
@@ -320,14 +321,9 @@ export default function BedsideFlow() {
   const osmDir: Snap = calcOsm < OSM_LO ? -1 : calcOsm > OSM_HI ? 1 : 0;
   const osmLab = Math.round(calcOsm);   // shown as the measured value
   const truthIcfDir = dirOf(truth.icf - BASE.icf, 0.1);
-  // The instant the case's fluid has reached the ECF, before any water crosses the membrane.
-  const pre = useMemo(() => {
-    const sum = (k: 'water' | 'salt' | 'glu') => c.events.reduce((a, e) => a + (e[k] ?? 0), 0);
-    const ecf = Math.max(0.5, BASE.ecf + sum('water'));
-    const urea = BASE.urea / (ecf + BASE.icf);
-    return { ecf, osm: (BASE.salt + BASE.glu + sum('salt') + sum('glu')) / ecf + urea, cells: BASE.icfEff / BASE.icf + urea };
-  }, [ci]);
-  const scaleMax = Math.max(380, Math.ceil((pre.osm + 40) / 50) * 50);
+  // Cells start at their normal effective osmolality plus this patient's urea (urea crosses cell membranes).
+  const cellsStart = Math.round(BASE.icfEff / BASE.icf + labBun / 2.8);
+  const scaleMax = 380;
   const flat = useMemo(() => flatChain(c), [ci]);
   const pool = useMemo(() => shuffled(flat.length, ci + 3), [ci]);
 
@@ -339,19 +335,20 @@ export default function BedsideFlow() {
 
   const volOk = vol != null && (vol === c.volume || (c.volumeAlso ?? []).includes(vol));
 
-  // What the diagram shows at each step. The case's fluid lands in the ECF first;
-  // water then crosses the membrane until both sides match.
-  const stage2 = { ecf: pre.ecf, icf: BASE.icf, osm: pre.cells, ecfOsm: pre.osm };
+  // What the diagram shows. Every value is the patient's own: ECF volume as examined, serum osmolality as measured.
+  // The cells start at normal; in the Cells step water moves until they match the serum.
+  const examEcf = { ecf: truth.ecf, icf: BASE.icf, osm: cellsStart };
+  const gradient = { ...examEcf, ecfOsm: osmLab };
   const final = { ecf: truth.ecf, icf: truth.icf, osm: osmLab };
-  const osmLine: Line = { v: osmLab, text: `Serum osmolality ${osmLab}: both sides settle here`, kind: 'truth' };
+  const osmLine: Line = { v: osmLab, text: `Serum osmolality ${osmLab}`, kind: 'truth' };
   const guessLine = (g: Snap | undefined): Line[] => g != null ? [{ v: OSM_SNAPS[g], text: 'your answer', kind: 'pred' }] : [];
   let diag: React.ReactNode;
-  if (step === 0 && vol == null) diag = <Diagram max={scaleMax} ecf={null} icf={BASE.icf} osm={pre.cells} />;
-  else if (step === 0 || (step === 1 && !osmChecked)) diag = <Diagram max={scaleMax} ecf={pre.ecf} icf={BASE.icf} osm={pre.cells} lines={step === 1 ? guessLine(osmGuess) : []} />;
-  else if (step === 1) diag = <Diagram max={scaleMax} {...stage2} showOsm lines={[osmLine, ...(osmGuess != null && osmGuess !== osmDir ? guessLine(osmGuess).map(l => ({ ...l, kind: 'wrong' as const })) : [])]} />;
+  if (step === 0 && vol == null) diag = <Diagram max={scaleMax} ecf={null} icf={BASE.icf} osm={cellsStart} />;
+  else if (step === 0 || (step === 1 && !osmChecked)) diag = <Diagram max={scaleMax} {...examEcf} lines={step === 1 ? guessLine(osmGuess) : []} />;
+  else if (step === 1) diag = <Diagram max={scaleMax} {...gradient} showOsm lines={[osmLine, ...(osmGuess != null && osmGuess !== osmDir ? guessLine(osmGuess).map(l => ({ ...l, kind: 'wrong' as const })) : [])]} />;
   else if (step === 2 && (!icfChecked || shift === 'before'))
-    diag = <Diagram max={scaleMax} {...stage2} showOsm lines={[osmLine]} arrow={icfChecked ? truthIcfDir : icfGuess ?? null} arrowGuess={!icfChecked} />;
-  else if (step === 2) diag = <Diagram max={scaleMax} {...final} showOsm arrow={truthIcfDir} preEcf={truthIcfDir !== 0 ? { ecf: pre.ecf, osm: pre.osm } : null} />;
+    diag = <Diagram max={scaleMax} {...gradient} showOsm arrow={icfChecked ? truthIcfDir : icfGuess ?? null} arrowGuess={!icfChecked} />;
+  else if (step === 2) diag = <Diagram max={scaleMax} {...final} showOsm arrow={truthIcfDir} />;
   else diag = <Diagram max={scaleMax} {...final} showOsm />;
 
   // Only the first answer to each question is scored; Reset and Back never change it.
@@ -459,7 +456,7 @@ export default function BedsideFlow() {
                 onPick={v => { setVol(v); setFlash(f => f + 1); record({ vol: v === c.volume || (c.volumeAlso ?? []).includes(v) }); }} />
               {vol != null && <>
                 <Verdict ok={volOk}>{c.volumeNote}</Verdict>
-                <p className="hint">The diagram now shows the ECF volume at the moment the change reaches it, before any water crosses the cell membrane (dashed = normal, 14 L).</p>
+                <p className="hint">The diagram now shows this patient’s ECF volume, {f1(truth.ecf)} L (dashed = normal, 14 L). Its height, the osmolality, comes next.</p>
                 <div className="row"><button className="primary" onClick={() => go(1)}>Next: osmolality</button>{resetBtn(0)}</div>
               </>}
             </div>
@@ -489,7 +486,7 @@ export default function BedsideFlow() {
                   {labGlu > 300 && <> Na⁺ is low, but glucose adds {f0(labGlu / 18)} mOsm/kg, so osmolality is high.</>}
                   {labGlu <= 300 && labNa < 135 && <> The low Na⁺ is what lowers it.</>}
                 </Verdict>
-                <p className="hint">The blue line is the serum osmolality: where both sides settle once water moves. The diagram shows the ECF ({f0(pre.osm)}) before any water has crossed; the cells are still at {f0(pre.cells)}.</p>
+                <p className="hint">The ECF is now drawn at the serum osmolality ({osmLab}). The cells are still drawn at their starting value ({cellsStart}).{labBun > 20 && <> That is above 285 because urea (BUN {labBun}) crosses cell membranes and adds the same amount to both sides.</>}</p>
                 <div className="row"><button className="primary" onClick={() => go(2)}>Next: cells</button>{resetBtn(1)}</div>
               </>}
             </div>
@@ -498,7 +495,7 @@ export default function BedsideFlow() {
           {step === 2 && (
             <div className="stepbox">
               <h3>3 · Cells</h3>
-              <p className="lead">The diagram shows the moment the change reached the ECF: ECF {f0(pre.osm)}, cells {f0(pre.cells)} mOsm/kg.</p>
+              <p className="lead">Serum (ECF) osmolality is {osmLab}; the cells start at {cellsStart} mOsm/kg.</p>
               <p className="q">Which side has the higher osmolality?</p>
               <Choice label="Higher osmolality" value={why} disabled={icfChecked}
                 options={[{ v: -1 as Snap, text: 'ECF' }, { v: 1 as Snap, text: 'Cells' }, { v: 0 as Snap, text: 'Neither: equal' }]}
@@ -514,20 +511,20 @@ export default function BedsideFlow() {
               </>}
               {icfChecked && <>
                 <Verdict label="Higher osmolality" ok={why === truthIcfDir}>{truthIcfDir === 0
-                  ? <>ECF and cells were both {f0(pre.osm)}: no gradient.</>
-                  : <>The {truthIcfDir > 0 ? 'cells' : 'ECF'} ({f0(truthIcfDir > 0 ? pre.cells : pre.osm)}) {truthIcfDir > 0 ? 'were' : 'was'} higher than the {truthIcfDir > 0 ? 'ECF' : 'cells'} ({f0(truthIcfDir > 0 ? pre.osm : pre.cells)}). Water moves toward the higher osmolality.</>}</Verdict>
+                  ? <>ECF and cells are both {osmLab}: no gradient.</>
+                  : <>The {truthIcfDir > 0 ? 'cells' : 'ECF'} ({truthIcfDir > 0 ? cellsStart : osmLab}) {truthIcfDir > 0 ? 'were' : 'was'} higher than the {truthIcfDir > 0 ? 'ECF' : 'cells'} ({truthIcfDir > 0 ? osmLab : cellsStart}). Water moves toward the higher osmolality.</>}</Verdict>
                 <Verdict label="Water" ok={icfGuess === truthIcfDir}>{c.icfNote} ICF {f1(truth.icf)} L (normal 28).</Verdict>
                 <p className="brain"><b>Brain:</b> {c.brainNote}</p>
                 <div className="shiftbox">
                   <div className="choices" role="group" aria-label="Water movement">
-                    <button aria-pressed={shift === 'before'} onClick={() => showShift('before')}>1 · Change reaches the ECF</button>
+                    <button aria-pressed={shift === 'before'} onClick={() => showShift('before')}>1 · Before water moves</button>
                     <button aria-pressed={shift === 'after'} onClick={() => showShift('after')}>2 · Water moves</button>
                     <button className="linkbtn" onClick={playShift}>Replay</button>
                   </div>
                   <p className="hint">{shift === 'before'
-                    ? <>ECF {f0(pre.osm)}, cells {f0(pre.cells)}.{truthIcfDir === 0 ? ' No gradient, so no water moves.' : ` Water moves ${truthIcfDir > 0 ? 'into' : 'out of'} the cells.`}</>
-                    : truthIcfDir === 0 ? <>Both sides stay at {osmLab}.</>
-                      : <>Water moved until both sides reached {osmLab}. Cells {truthIcfDir > 0 ? 'swelled' : 'shrank'} to {f1(truth.icf)} L; ECF ended at {f1(truth.ecf)} L (dotted = before water moved).</>}</p>
+                    ? <>Serum {osmLab}, cells {cellsStart}.{truthIcfDir === 0 ? ' No gradient, so no water moves.' : ` Water moves ${truthIcfDir > 0 ? 'into' : 'out of'} the cells.`}</>
+                    : truthIcfDir === 0 ? <>Both sides stay at {osmLab}. ICF volume is unchanged.</>
+                      : <>Water moved until the cells matched the serum ({osmLab}). Cells {truthIcfDir > 0 ? 'swelled' : 'shrank'} to {f1(truth.icf)} L (dashed = normal, 28 L).</>}</p>
                 </div>
                 <div className="row"><button className="primary" onClick={() => go(3)}>Next: kidney</button>{resetBtn(2)}</div>
               </>}
@@ -644,7 +641,7 @@ export default function BedsideFlow() {
         </section>
       </div>
 
-      <footer>© 2026 Ian V. J. Murray · CC BY-NC-SA 4.0 · Teaching model: 42 L body water; urine values are illustrative.</footer>
+      <footer>© 2026 Ian V. J. Murray · CC BY-NC-SA 4.0 · Teaching model: 42 L body water.</footer>
     </div>
   );
 }
