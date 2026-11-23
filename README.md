@@ -2,9 +2,9 @@
 
 Interactive case activity for teaching ECF volume, serum osmolality and water shifts, on a fluid compartment (Darrow–Yannet) diagram.
 
-**Live page:** https://imurra.github.io/Darrow_Yannet_Diagram/ (opens the activity)
+**Live page:** https://imurra.github.io/body-fluid-physiology/ (opens the activity)
 
-## The activity — `bedside/`
+## The activity — `index.html` (source in `src/`)
 Opening screen with the purpose, then six steps per case (diagnosis given):
 1. What is affected (circulation, brain, both, neither) from vital signs and mental status
 2. ECF volume (exam)
@@ -14,11 +14,11 @@ Opening screen with the purpose, then six steps per case (diagnosis given):
 6. Causal chain and case summary
 
 4 cases: diarrhea, SIADH, heart failure, HHS.
-`bedside/index.html` is self-contained and works offline.
+`index.html` is self-contained and works offline.
 
 ## Hosting
 GitHub Pages (Settings → Pages → Deploy from branch `main`, `/ (root)`).
-The site root redirects to `bedside/`. `_config.yml` keeps `archive/` off the published site.
+`bedside/` holds a redirect so older links still open the activity. `_config.yml` keeps `archive/` and `src/` off the published site.
 
 ## Model
 - Baseline 42 L total body water: ICF 28 L, ECF 14 L, 290 mOsm/kg

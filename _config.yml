@@ -1,4 +1,5 @@
-# GitHub Pages publishes only the Bedside activity.
+# GitHub Pages publishes the activity (index.html) and a redirect at bedside/ for old links.
 # archive/ (original 2024 dashboard and the Explorer) stays in the repo but is not published.
 exclude:
   - archive
+  - src
