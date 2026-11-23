@@ -1,5 +1,5 @@
 /*
- * Body Fluids at the Bedside: Volume and Osmolality
+ * Body Fluid Physiology: Volume and Osmolality
  * Copyright (c) 2026 Ian Victor Joseph Murray · CC BY-NC-SA 4.0
  * http://creativecommons.org/licenses/by-nc-sa/4.0/
  */
@@ -7,7 +7,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { BASE, labs, run } from './engine';
 import { CASES, Case, Vol, Danger } from './cases';
 
-const TITLE = 'Body Fluids at the Bedside';
+const TITLE = 'Body Fluid Physiology';
 const STEPS = ['What is affected', 'ECF volume', 'Osmolality', 'Cells', 'Kidney', 'Causal chain'];
 const NORMAL = 290;                         // serum osmolality, mOsm/kg
 const OSM_LO = 275, OSM_HI = 295;           // reference range
@@ -392,7 +392,7 @@ export default function BedsideFlow() {
     <div className="dy">
       <header className="top">
         <div>
-          <div className="eyebrow">Volume and osmolality</div>
+          <div className="eyebrow">Volume and osmolality · four patient cases</div>
           <h1>{TITLE}</h1>
         </div>
         <label className="casepick">

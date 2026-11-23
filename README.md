@@ -1,4 +1,4 @@
-# Body Fluids at the Bedside
+# Body Fluid Physiology: Volume and Osmolality
 
 Interactive case activity for teaching ECF volume, serum osmolality and water shifts, on a fluid compartment (Darrow–Yannet) diagram.
 

@@ -1,4 +1,4 @@
-# Body Fluids at the Bedside: Volume and Osmolality
+# Body Fluid Physiology: Volume and Osmolality
 
 Interactive case activity on a live fluid compartment (Darrow–Yannet) diagram.
 
