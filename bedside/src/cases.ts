@@ -29,6 +29,7 @@ export type Case = {
   // Other results that support the diagnosis or the exam findings
   tests?: string[];
   danger: { brain: string; circulation: string };   // mental status; vital signs
+  affectedNote: string;                              // feedback for 'What is affected?'
   exam: string[];
   volume: Vol; volumeAlso?: Vol[]; volumeNote: string;
   events: Event[];
@@ -41,7 +42,7 @@ export type Case = {
   // The causal chain, in order, for the end-of-case ordering task
   chain: Link[];
   debrief: { who: string; what: string; findings: string; affected: string };
-  // Kept from the earlier version (not shown): danger key
+  // What is affected: circulation, brain, both or neither
   dangerKey: Danger; dangerAlso?: Danger[];
   // Treatment data kept from the earlier version; not shown (treatment is not taught)
   needEcf: Need; needCells: Need; needNote: string;
@@ -59,6 +60,7 @@ export const CASES: Case[] = [
     dx: "Acute infectious diarrhea.",
     tests: ["Stool: watery, no blood"],
     danger: {"brain": "Alert and oriented.", "circulation": "HR 118, BP 96/60."},
+    affectedNote: "Circulation: a heart rate of 118 with a BP of 96/60 means the circulation is affected. Brain: alert and oriented, so not affected.",
     exam: ["Orthostatic: BP falls 22/12 mm Hg, HR rises 30/min", "Flat neck veins", "Dry mucous membranes", "No edema"],
     volume: "dry",
     volumeNote: "Orthostatic changes, flat neck veins and dry mucous membranes: ECF volume is decreased. The circulation is affected: less plasma volume means less venous return, so the heart rate rises to hold blood pressure.",
@@ -93,6 +95,7 @@ export const CASES: Case[] = [
     dx: "Syndrome of inappropriate antidiuretic hormone secretion (SIADH) from small cell lung carcinoma.",
     tests: ["TSH and morning cortisol normal", "No diuretics or other drugs that cause hyponatremia"],
     danger: {"brain": "Mild nausea; alert, no confusion.", "circulation": "HR 78, BP 132/80."},
+    affectedNote: "Brain: nausea is an early symptom of brain cells swelling (a moderately severe symptom in the hyponatremia guideline). Circulation: normal heart rate and BP, so not affected.",
     exam: ["No orthostatic change", "Normal neck veins", "Moist mucous membranes", "No edema"],
     volume: "euvolemic",
     volumeNote: "No orthostatic change, normal neck veins, moist mucosa, no edema: ECF volume is clinically normal, and the circulation is not affected. The ECF is in fact slightly expanded, but too little to detect at the bedside, because most of the retained water moves into cells (next steps).",
@@ -108,7 +111,7 @@ export const CASES: Case[] = [
     roleNote: "Contributing to the problem. The kidney itself is normal: it responds to the tumor’s ADH by retaining water, even though the low osmolality calls for excreting it.",
     chain: ["Tumor cells secrete ADH (paraneoplastic)", "ADH makes the collecting ducts reabsorb free water", "Retained water dilutes the ECF: serum Na⁺ and osmolality fall", "Water moves into cells until osmolality is equal on both sides", "About two-thirds of the retained water is now in cells, so ECF volume looks normal"],
     debrief: {"who": "Older smoker with small cell lung carcinoma.", "what": "The tumor secretes antidiuretic hormone (ADH), a paraneoplastic syndrome, so the kidney retains free water. Most of that water moves into cells, so the patient looks euvolemic while Na⁺ and osmolality fall.", "findings": "Clinically euvolemic; Na⁺ 129, serum osmolality 267; urine osm 600, urine Na⁺ 50; normal TSH and cortisol.", "affected": "Brain: mild now; a further or faster fall causes cerebral edema. Circulation: unaffected."},
-    dangerKey: "neither",
+    dangerKey: "brain",
     needEcf: 'none', needCells: 'out', needNote: 'Volume is fine. The cells hold excess water.',
     adhUosm: 600,
     safety: 'Chronic hyponatremia: raise Na⁺ no more than 8–10 mmol/L in 24 h, and no more than 8 if osmotic demyelination risk is high (Na⁺ ≤105, low K⁺, alcohol use, malnutrition, liver disease). Too fast a rise can cause osmotic demyelination days later. Check Na⁺ every 4–6 h; D5W or desmopressin can bring an overshoot back down.',
@@ -128,6 +131,7 @@ export const CASES: Case[] = [
     dx: "Acute decompensated heart failure with reduced ejection fraction (HFrEF).",
     tests: ["Chest X-ray: pulmonary vascular congestion, small bilateral pleural effusions", "BNP 1,450 pg/mL (raised)"],
     danger: {"brain": "Alert, mildly fatigued.", "circulation": "BP 104/70, HR 102, RR 24, SpO₂ 90% on room air; cool hands."},
+    affectedNote: "Circulation: tachycardia, a low-normal BP, cool hands and an SpO₂ of 90% mean the circulation is affected. Brain: alert, so not affected. The next step asks a different question: how much ECF there is.",
     exam: ["Raised JVP", "Crackles at both lung bases", "Pitting edema to the knees", "Weight up 5 kg in 2 weeks"],
     volume: "wet",
     volumeNote: "Raised JVP, edema, crackles and a 5 kg weight gain: ECF volume is increased. Edema, crackles and congestion on the chest X-ray show that much of the extra fluid is in the interstitium. The circulation is affected, but not by low volume: with an ejection fraction of 25% the ventricle cannot move the volume it has, so forward flow is poor (cool hands, low-normal BP) and the lungs are congested.",
@@ -162,6 +166,7 @@ export const CASES: Case[] = [
     dx: "Hyperosmolar hyperglycemic state (HHS).",
     tests: ["Serum ketones negative; arterial pH 7.36 (no ketoacidosis)"],
     danger: {"brain": "Drowsy, slow to answer.", "circulation": "HR 116, BP 94/58."},
+    affectedNote: "Both. Circulation: a heart rate of 116 with a BP of 94/58. Brain: drowsy and slow to answer.",
     exam: ["Orthostatic: BP falls 20/10 mm Hg", "Flat neck veins", "Very dry mucous membranes", "Weight down 8 kg in a week"],
     volume: "dry",
     volumeNote: "Orthostatic changes, flat neck veins and very dry mucous membranes: ECF volume is decreased. The circulation is affected.",

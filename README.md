@@ -5,12 +5,13 @@ Interactive case activity for teaching ECF volume, serum osmolality and water sh
 **Live page:** https://imurra.github.io/Darrow_Yannet_Diagram/ (opens the activity)
 
 ## The activity — `bedside/`
-Opening screen with the purpose, then five steps per case (diagnosis given):
-1. ECF volume (vital signs and exam; is the circulation affected?)
-2. Serum osmolality (2 × Na⁺ + glucose/18 + BUN/2.8)
-3. Cells (higher side, water movement, brain)
-4. Kidney (water, salt, appropriate or contributing)
-5. Causal chain and case summary
+Opening screen with the purpose, then six steps per case (diagnosis given):
+1. What is affected (circulation, brain, both, neither) from vital signs and mental status
+2. ECF volume (exam)
+3. Serum osmolality (2 × Na⁺ + glucose/18 + BUN/2.8)
+4. Cells (higher side, water movement, brain)
+5. Kidney (water, salt, appropriate or contributing)
+6. Causal chain and case summary
 
 4 cases: diarrhea, SIADH, heart failure, HHS.
 `bedside/index.html` is self-contained and works offline.

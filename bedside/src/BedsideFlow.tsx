@@ -5,10 +5,10 @@
  */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { BASE, labs, run } from './engine';
-import { CASES, Case, Vol } from './cases';
+import { CASES, Case, Vol, Danger } from './cases';
 
 const TITLE = 'Body Fluids at the Bedside';
-const STEPS = ['ECF volume', 'Osmolality', 'Cells', 'Kidney', 'Causal chain'];
+const STEPS = ['What is affected', 'ECF volume', 'Osmolality', 'Cells', 'Kidney', 'Causal chain'];
 const NORMAL = 290;                         // serum osmolality, mOsm/kg
 const OSM_LO = 275, OSM_HI = 295;           // reference range
 const DIRWORD: Record<-1 | 0 | 1, string> = { [-1]: 'low', 0: 'normal', 1: 'high' };
@@ -18,9 +18,9 @@ const caseLabel = (i: number) => `Case ${i + 1} of ${CORE}`;
 const OSM_SNAPS: Record<-1 | 0 | 1, number> = { [-1]: 250, 0: NORMAL, 1: 330 };
 
 type Snap = -1 | 0 | 1;
-type Result = { vol?: boolean; osm?: boolean; why?: boolean; icf?: boolean; water?: boolean; salt?: boolean; role?: boolean; chain?: boolean };
+type Result = { aff?: boolean; vol?: boolean; osm?: boolean; why?: boolean; icf?: boolean; water?: boolean; salt?: boolean; role?: boolean; chain?: boolean };
 const SCORED: [keyof Result, string][] = [
-  ['vol', 'ECF volume'], ['osm', 'Osmolality'], ['why', 'Cells: gradient'], ['icf', 'Cells: water movement'],
+  ['aff', 'What is affected'], ['vol', 'ECF volume'], ['osm', 'Osmolality'], ['why', 'Cells: gradient'], ['icf', 'Cells: water movement'],
   ['water', 'Kidney: water'], ['salt', 'Kidney: salt'], ['role', 'Kidney: response'], ['chain', 'Causal chain'],
 ];
 
@@ -121,7 +121,7 @@ function Diagram({ ecf, icf, osm, ecfOsm, showOsm, lines = [], preEcf, arrow, ar
 
       <text x={mem - (icf * PX) / 2} y={bottom - 14} textAnchor="middle" className="lab icf-t">ICF</text>
       {ecf != null && <text x={mem + (ecf * PX) / 2} y={bottom - 14} textAnchor="middle" className="lab ecf-t">ECF</text>}
-      {ecf == null && <text x={mem + 63} y={(top + bottom) / 2 + 30} textAnchor="middle" className="tick">ECF: judge volume first</text>}
+      {ecf == null && <text x={mem + 12} y={(top + bottom) / 2 + 30} className="tick">ECF: judged in step 2</text>}
 
       <line x1={left} x2={W - 12} y1={bottom} y2={bottom} className="axis" />
       {[30, 20, 10].map(v => <text key={`i${v}`} x={mem - v * PX} y={bottom + 16} textAnchor="middle" className="tick">{v}</text>)}
@@ -185,9 +185,10 @@ function Intro({ onStart, started }: { onStart: () => void; started: boolean }) 
         <li>Width is volume (L). Height is osmolality (mOsm/kg). Dashed outlines show normal: ICF 28 L, ECF 14 L, 290 mOsm/kg.</li>
         <li>Water crosses the membrane until osmolality is equal on both sides.</li>
       </ul>
-      <h3>Each case has five steps</h3>
+      <h3>Each case has six steps</h3>
       <ol>
-        <li><b>ECF volume</b> from the vital signs and exam: is the circulation affected?</li>
+        <li><b>What is affected</b>, from the vital signs and mental status: the circulation, the brain, both or neither?</li>
+        <li><b>ECF volume</b> from the exam: decreased, normal or increased?</li>
         <li><b>Osmolality</b> from Na⁺, glucose and BUN.</li>
         <li><b>Cells</b>: which way water moves, and what that means for the brain.</li>
         <li><b>Kidney</b>: what the urine shows, and whether the response is appropriate.</li>
@@ -200,13 +201,22 @@ function Intro({ onStart, started }: { onStart: () => void; started: boolean }) 
 }
 
 // ---------- Reference ----------
-const SOURCES: { text: string; url: string }[] = [
-  { text: 'Darrow DC, Yannet H. The changes in the distribution of body water accompanying increase and decrease in extracellular electrolyte. J Clin Invest 1935;14:266–275 (origin of this diagram)', url: 'https://doi.org/10.1172/JCI100674' },
-  { text: 'Spasovski G, et al. Clinical practice guideline on diagnosis and treatment of hyponatraemia. Eur J Endocrinol 2014;170:G1–G47', url: 'https://doi.org/10.1530/EJE-13-1020' },
-  { text: 'Verbalis JG, et al. Diagnosis, evaluation, and treatment of hyponatremia: expert panel recommendations. Am J Med 2013;126:S1–S42', url: 'https://doi.org/10.1016/j.amjmed.2013.07.006' },
-  { text: 'Adrogué HJ, Madias NE. Hypernatremia. N Engl J Med 2000;342:1493–1499', url: 'https://doi.org/10.1056/NEJM200005183422006' },
-  { text: 'Umpierrez GE, et al. Hyperglycemic crises in adults with diabetes: a consensus report. Diabetes Care 2024;47:1257–1275', url: 'https://doi.org/10.2337/dci24-0032' },
-  { text: 'Joint British Diabetes Societies. Management of the hyperosmolar hyperglycaemic state (HHS) in adults', url: 'https://www.rcemlearning.co.uk/reference/hyperosmolar-hyperglycaemic-state/' },
+// Each source carries a note on what it supports in this activity.
+const SOURCES: { text: string; url?: string; why: string }[] = [
+  { text: 'Bagby SP, Bennett WM. Differentiating disorders of ECF volume/Na content regulation from disorders of water/Na concentration regulation. Adv Physiol Educ 1998;20:S169–S184', url: 'https://doi.org/10.1152/advances.1998.275.6.S169',
+    why: 'Describes the confusion this activity targets: the amount of sodium (ECF volume) versus its concentration (osmolality).' },
+  { text: 'Cheng HM, Hoe SZ. Students lose balance over the yin-yang of sodium physiology. BLDE Univ J Health Sci 2018;3:54–57', url: 'https://doaj.org/article/71b5956a6951442aba58dff52ca47bf4',
+    why: 'Shows that students still fail to separate sodium balance from sodium concentration.' },
+  { text: 'Darrow DC, Yannet H. The changes in the distribution of body water accompanying increase and decrease in extracellular electrolyte. J Clin Invest 1935;14:266–275', url: 'https://doi.org/10.1172/JCI100674',
+    why: 'Origin of the fluid compartment diagram used here (volume on one axis, osmolality on the other).' },
+  { text: 'Spasovski G, et al. Clinical practice guideline on diagnosis and treatment of hyponatraemia. Eur J Endocrinol 2014;170:G1–G47', url: 'https://doi.org/10.1530/EJE-13-1020',
+    why: 'Source of the urine cutoffs in the Kidney step (urine osmolality 100 mOsm/kg; urine Na⁺ 30 mEq/L) and of grading hyponatremia symptoms by severity, used in “What is affected?” (nausea counts as a moderately severe symptom).' },
+  { text: 'Verbalis JG, et al. Diagnosis, evaluation, and treatment of hyponatremia: expert panel recommendations. Am J Med 2013;126:S1–S42', url: 'https://doi.org/10.1016/j.amjmed.2013.07.006',
+    why: 'Diagnostic criteria for SIADH used in case 2: low serum osmolality, concentrated urine, urine Na⁺ above 30, clinical euvolemia, and normal thyroid and adrenal function.' },
+  { text: 'Umpierrez GE, et al. Hyperglycemic crises in adults with diabetes: a consensus report. Diabetes Care 2024;47:1257–1275', url: 'https://doi.org/10.2337/dci24-0032',
+    why: 'Diagnostic criteria for HHS used in case 4: glucose ≥ 600 mg/dL, effective osmolality > 300 or total osmolality > 320 mOsm/kg, pH ≥ 7.3, without significant ketosis.' },
+  { text: 'White RT, Gunstone RF. Probing Understanding. London: Falmer Press; 1992',
+    why: 'Predict–observe–explain, the structure of each step: students predict, the diagram shows the result, and the feedback explains it.' },
 ];
 
 // Plain-language background on each condition (MedlinePlus, US National Library of Medicine)
@@ -273,7 +283,8 @@ function Reference({ onClose }: { onClose: () => void }) {
       <p>42 L total body water (ICF 28 L, ECF 14 L). Na⁺ salts and glucose stay in the ECF; ICF solute is fixed; urea spreads through all body water. Osmolality is shown in mOsm/kg, taking 1 L of body water as 1 kg. Urine values are typical values chosen to match the guideline cutoffs. This is a teaching tool, not a guide to treatment.</p>
 
       <h3>Sources</h3>
-      <ol className="sources">{SOURCES.map(x => <li key={x.url}><a href={x.url} target="_blank" rel="noopener">{x.text}</a></li>)}</ol>
+      <p className="hint">Each source is followed by what it supports in this activity.</p>
+      <ol className="sources">{SOURCES.map(x => <li key={x.text}>{x.url ? <a href={x.url} target="_blank" rel="noopener">{x.text}</a> : x.text}<br /><span className="why">{x.why}</span></li>)}</ol>
     </section>
   );
 }
@@ -285,6 +296,7 @@ export default function BedsideFlow() {
   const [ci, setCi] = useState(0);
   const [step, setStep] = useState(0);
   const [maxStep, setMaxStep] = useState(0);
+  const [aff, setAff] = useState<Danger>();
   const [vol, setVol] = useState<Vol>();
   const [osmGuess, setOsmGuess] = useState<Snap>();
   const [osmChecked, setOsmChecked] = useState(false);
@@ -328,7 +340,7 @@ export default function BedsideFlow() {
   const pool = useMemo(() => shuffled(flat.length, ci + 3), [ci]);
 
   const reset = (i: number) => {
-    setCi(i); setStep(0); setMaxStep(0); setVol(undefined); setOsmGuess(undefined); setOsmChecked(false); setWhy(undefined);
+    setCi(i); setStep(0); setMaxStep(0); setAff(undefined); setVol(undefined); setOsmGuess(undefined); setOsmChecked(false); setWhy(undefined);
     setIcfGuess(undefined); setIcfChecked(false); setWater(undefined); setSalt(undefined); setRole(undefined); setKidneyChecked(false);
     setOrder([]); setChainChecked(false); setResult({}); showShift('after');
   };
@@ -343,12 +355,12 @@ export default function BedsideFlow() {
   const osmLine: Line = { v: osmLab, text: `Serum osmolality ${osmLab}`, kind: 'truth' };
   const guessLine = (g: Snap | undefined): Line[] => g != null ? [{ v: OSM_SNAPS[g], text: 'your answer', kind: 'pred' }] : [];
   let diag: React.ReactNode;
-  if (step === 0 && vol == null) diag = <Diagram max={scaleMax} ecf={null} icf={BASE.icf} osm={cellsStart} />;
-  else if (step === 0 || (step === 1 && !osmChecked)) diag = <Diagram max={scaleMax} {...examEcf} lines={step === 1 ? guessLine(osmGuess) : []} />;
-  else if (step === 1) diag = <Diagram max={scaleMax} {...gradient} showOsm lines={[osmLine, ...(osmGuess != null && osmGuess !== osmDir ? guessLine(osmGuess).map(l => ({ ...l, kind: 'wrong' as const })) : [])]} />;
-  else if (step === 2 && (!icfChecked || shift === 'before'))
+  if (step === 0 || (step === 1 && vol == null)) diag = <Diagram max={scaleMax} ecf={null} icf={BASE.icf} osm={cellsStart} />;
+  else if (step === 1 || (step === 2 && !osmChecked)) diag = <Diagram max={scaleMax} {...examEcf} lines={step === 2 ? guessLine(osmGuess) : []} />;
+  else if (step === 2) diag = <Diagram max={scaleMax} {...gradient} showOsm lines={[osmLine, ...(osmGuess != null && osmGuess !== osmDir ? guessLine(osmGuess).map(l => ({ ...l, kind: 'wrong' as const })) : [])]} />;
+  else if (step === 3 && (!icfChecked || shift === 'before'))
     diag = <Diagram max={scaleMax} {...gradient} showOsm arrow={icfChecked ? truthIcfDir : icfGuess ?? null} arrowGuess={!icfChecked} />;
-  else if (step === 2) diag = <Diagram max={scaleMax} {...final} showOsm arrow={truthIcfDir} />;
+  else if (step === 3) diag = <Diagram max={scaleMax} {...final} showOsm arrow={truthIcfDir} />;
   else diag = <Diagram max={scaleMax} {...final} showOsm />;
 
   // Only the first answer to each question is scored; Reset and Back never change it.
@@ -359,16 +371,17 @@ export default function BedsideFlow() {
   });
   const go = (n: number) => { setStep(n); setMaxStep(m => Math.max(m, n)); };
   const redo = (n: number) => {
-    if (n === 0) setVol(undefined);
-    if (n === 1) { setOsmGuess(undefined); setOsmChecked(false); }
-    if (n === 2) { setIcfGuess(undefined); setWhy(undefined); setIcfChecked(false); showShift('after'); }
-    if (n === 3) { setWater(undefined); setSalt(undefined); setRole(undefined); setKidneyChecked(false); }
-    if (n === 4) { setOrder([]); setChainChecked(false); }
+    if (n === 0) setAff(undefined);
+    if (n === 1) setVol(undefined);
+    if (n === 2) { setOsmGuess(undefined); setOsmChecked(false); }
+    if (n === 3) { setIcfGuess(undefined); setWhy(undefined); setIcfChecked(false); showShift('after'); }
+    if (n === 4) { setWater(undefined); setSalt(undefined); setRole(undefined); setKidneyChecked(false); }
+    if (n === 5) { setOrder([]); setChainChecked(false); }
   };
   const resetBtn = (n: number) => (
     <button className="linkbtn" onClick={() => redo(n)} title="Clear your answer to this step and try again. Your first answer is still the one scored.">Reset this step</button>
   );
-  const answered = [vol != null, osmChecked, icfChecked, kidneyChecked, chainChecked][step] ?? false;
+  const answered = [aff != null, vol != null, osmChecked, icfChecked, kidneyChecked, chainChecked][step] ?? false;
   const pts = SCORED.filter(([k]) => result[k] === true).length;
 
   const start = () => { setShowIntro(false); setStarted(true); };
@@ -423,16 +436,16 @@ export default function BedsideFlow() {
           <dl className="chart" aria-label="Patient chart">
             <div><dt>Vital signs</dt><dd><span>{c.danger.circulation}</span></dd></div>
             <div><dt>Mental status</dt><dd><span>{c.danger.brain}</span></dd></div>
-            <div><dt>Exam</dt><dd>{c.exam.map(x => <span key={x}>{x}</span>)}</dd></div>
-            {c.tests && c.tests.length > 0 && <div><dt>Other tests</dt><dd>{c.tests.map(x => <span key={x}>{x}</span>)}</dd></div>}
-            {maxStep >= 1 && <div><dt>Serum</dt><dd>
+            {maxStep >= 1 && <div><dt>Exam</dt><dd>{c.exam.map(x => <span key={x}>{x}</span>)}</dd></div>}
+            {maxStep >= 1 && c.tests && c.tests.length > 0 && <div><dt>Other tests</dt><dd>{c.tests.map(x => <span key={x}>{x}</span>)}</dd></div>}
+            {maxStep >= 2 && <div><dt>Serum</dt><dd>
               <span className="v">Na⁺ {labNa} mEq/L</span>
               <span className="v">Glucose {labGlu} mg/dL</span>
               <span className="v">BUN {labBun} mg/dL</span>
               <span className="v">Hct {f0(L.hct)}%</span>
-              {(osmChecked || maxStep > 1) && <span className="v">Osmolality {osmLab} mOsm/kg (measured)</span>}
+              {(osmChecked || maxStep > 2) && <span className="v">Osmolality {osmLab} mOsm/kg (measured)</span>}
             </dd></div>}
-            {maxStep >= 3 && <div><dt>Urine</dt><dd>
+            {maxStep >= 4 && <div><dt>Urine</dt><dd>
               <span className="v">Osmolality {c.urine.osm} mOsm/kg</span>
               <span className="v">Na⁺ {c.urine.na} mEq/L</span>
               {c.urine.extra && <span>{c.urine.extra}</span>}
@@ -448,8 +461,24 @@ export default function BedsideFlow() {
 
           {step === 0 && (
             <div className="stepbox">
-              <h3>1 · ECF volume</h3>
-              <p className="lead">Use the vital signs and exam above.</p>
+              <h3>1 · What is affected?</h3>
+              <p className="lead">Use the vital signs and mental status above.</p>
+              <p className="q">Which is affected?</p>
+              <Choice label="What is affected" value={aff} disabled={aff != null}
+                options={[{ v: 'circulation' as Danger, text: 'Circulation' }, { v: 'brain' as Danger, text: 'Brain' }, { v: 'both' as Danger, text: 'Both' }, { v: 'neither' as Danger, text: 'Neither' }]}
+                onPick={v => { setAff(v); record({ aff: v === c.dangerKey || (c.dangerAlso ?? []).includes(v) }); }} />
+              {aff != null && <>
+                <Verdict ok={aff === c.dangerKey || (c.dangerAlso ?? []).includes(aff)}>{c.affectedNote}</Verdict>
+                <p className="hint">Circulation depends mainly on ECF volume (the amount of sodium); the brain depends on cell volume (the sodium concentration). The next steps check each one.</p>
+                <div className="row"><button className="primary" onClick={() => go(1)}>Next: ECF volume</button>{resetBtn(0)}</div>
+              </>}
+            </div>
+          )}
+
+          {step === 1 && (
+            <div className="stepbox">
+              <h3>2 · ECF volume</h3>
+              <p className="lead">Use the exam: neck veins, mucous membranes, edema, weight, orthostatic change.</p>
               <p className="q">ECF volume is:</p>
               <Choice label="ECF volume" value={vol} disabled={vol != null}
                 options={[{ v: 'dry' as Vol, text: 'Decreased' }, { v: 'euvolemic' as Vol, text: 'Normal' }, { v: 'wet' as Vol, text: 'Increased' }]}
@@ -457,14 +486,14 @@ export default function BedsideFlow() {
               {vol != null && <>
                 <Verdict ok={volOk}>{c.volumeNote}</Verdict>
                 <p className="hint">The diagram now shows this patient’s ECF volume, {f1(truth.ecf)} L (dashed = normal, 14 L). Its height, the osmolality, comes next.</p>
-                <div className="row"><button className="primary" onClick={() => go(1)}>Next: osmolality</button>{resetBtn(0)}</div>
+                <div className="row"><button className="primary" onClick={() => go(2)}>Next: osmolality</button>{resetBtn(1)}</div>
               </>}
             </div>
           )}
 
-          {step === 1 && (
+          {step === 2 && (
             <div className="stepbox">
-              <h3>2 · Serum osmolality</h3>
+              <h3>3 · Serum osmolality</h3>
               <p className="lead">Na⁺ and glucose are the main ECF solutes. Calculate serum osmolality from the serum results above:</p>
               <p className="formula mono">2 × Na⁺ + glucose/18 + BUN/2.8</p>
               <details className="hintbox">
@@ -487,14 +516,14 @@ export default function BedsideFlow() {
                   {labGlu <= 300 && labNa < 135 && <> The low Na⁺ is what lowers it.</>}
                 </Verdict>
                 <p className="hint">The ECF is now drawn at the serum osmolality ({osmLab}). The cells are still drawn at their starting value ({cellsStart}).{labBun > 20 && <> That is above 285 because urea (BUN {labBun}) crosses cell membranes and adds the same amount to both sides.</>}</p>
-                <div className="row"><button className="primary" onClick={() => go(2)}>Next: cells</button>{resetBtn(1)}</div>
+                <div className="row"><button className="primary" onClick={() => go(3)}>Next: cells</button>{resetBtn(2)}</div>
               </>}
             </div>
           )}
 
-          {step === 2 && (
+          {step === 3 && (
             <div className="stepbox">
-              <h3>3 · Cells</h3>
+              <h3>4 · Cells</h3>
               <p className="lead">Serum (ECF) osmolality is {osmLab}; the cells start at {cellsStart} mOsm/kg.</p>
               <p className="q">Which side has the higher osmolality?</p>
               <Choice label="Higher osmolality" value={why} disabled={icfChecked}
@@ -526,14 +555,14 @@ export default function BedsideFlow() {
                     : truthIcfDir === 0 ? <>Both sides stay at {osmLab}. ICF volume is unchanged.</>
                       : <>Water moved until the cells matched the serum ({osmLab}). Cells {truthIcfDir > 0 ? 'swelled' : 'shrank'} to {f1(truth.icf)} L (dashed = normal, 28 L).</>}</p>
                 </div>
-                <div className="row"><button className="primary" onClick={() => go(3)}>Next: kidney</button>{resetBtn(2)}</div>
+                <div className="row"><button className="primary" onClick={() => go(4)}>Next: kidney</button>{resetBtn(3)}</div>
               </>}
             </div>
           )}
 
-          {step === 3 && (
+          {step === 4 && (
             <div className="stepbox">
-              <h3>4 · Kidney</h3>
+              <h3>5 · Kidney</h3>
               <p className="lead">Urine osmolality {c.urine.osm} mOsm/kg, urine Na⁺ {c.urine.na} mEq/L{c.urine.extra ? `, ${c.urine.extra.toLowerCase()}` : ''}.</p>
               <details className="hintbox">
                 <summary>Reading the urine</summary>
@@ -554,16 +583,16 @@ export default function BedsideFlow() {
                 <Verdict label="Water" ok={water === c.water}>{c.waterNote}</Verdict>
                 <Verdict label="Salt" ok={salt === c.salt}>{c.saltNote}</Verdict>
                 <Verdict label="Response" ok={role === c.kidneyRole}>{c.roleNote}</Verdict>
-                <div className="row"><button className="primary" onClick={() => go(4)}>Next: causal chain</button>{resetBtn(3)}</div>
+                <div className="row"><button className="primary" onClick={() => go(5)}>Next: causal chain</button>{resetBtn(4)}</div>
               </>}
             </div>
           )}
 
-          {step === 4 && (() => {
+          {step === 5 && (() => {
             const done = Object.keys({ ...history, [c.id]: result }).length;
             return (
               <div className="stepbox">
-                <h3>5 · Causal chain</h3>
+                <h3>6 · Causal chain</h3>
                 <div className="chainbox">
                   <p className="q">Tap the links in order, from the cause to the bedside findings.</p>
                   {c.chain.some(Array.isArray) && <p className="hint">Slots with the same number happen at the same time; either order is accepted.</p>}
@@ -594,7 +623,7 @@ export default function BedsideFlow() {
                     <button className="linkbtn" disabled={!order.length} onClick={() => setOrder([])}>Clear</button>
                   </div>}
                   {chainChecked && <Verdict ok={chainOk}>{chainOk ? 'Each link leads to the next.' : 'Compare with the corrected order: each link leads to the next.'}</Verdict>}
-                  {chainChecked && <div className="row">{resetBtn(4)}</div>}
+                  {chainChecked && <div className="row">{resetBtn(5)}</div>}
                 </div>
                 {chainChecked && <>
                   <div className="debrief">
@@ -626,10 +655,10 @@ export default function BedsideFlow() {
         <section className="figure" aria-label="Fluid compartment diagram">
           {flash > 0 && <div key={flash} className="flash" aria-hidden="true" />}
           <div className="diagwrap">
-            {maxStep >= 1 && <div className="minilabs mono" aria-hidden="true">
+            {maxStep >= 2 && <div className="minilabs mono" aria-hidden="true">
               <span>Na⁺ {labNa}</span><span>Glu {labGlu}</span><span>BUN {labBun}</span>
-              {(osmChecked || maxStep > 1) && <span>Osm {osmLab}</span>}
-              {maxStep >= 3 && <><span>U<sub>osm</sub> {c.urine.osm}</span><span>U<sub>Na</sub> {c.urine.na}</span></>}
+              {(osmChecked || maxStep > 2) && <span>Osm {osmLab}</span>}
+              {maxStep >= 4 && <><span>U<sub>osm</sub> {c.urine.osm}</span><span>U<sub>Na</sub> {c.urine.na}</span></>}
             </div>}
             {diag}
             <div className="legend">

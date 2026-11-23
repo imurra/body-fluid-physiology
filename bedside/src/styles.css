@@ -30,7 +30,7 @@ body { background: var(--bg); color: var(--ink); }
 h1 { margin: 2px 0 0; font-family: var(--font-head); font-weight: 600; font-size: clamp(1.6rem, 3vw, 2.2rem); line-height: 1.1; text-wrap: balance; }
 .casepick { display: flex; gap: 8px; align-items: center; font-weight: 600; }
 .casepick select { font: inherit; padding: 8px 10px; min-height: 44px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); max-width: 100%; }
-.progress { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.progress { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; }
 .progress li { display: flex; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 8px; background: var(--soft); color: var(--muted); font-size: 14px; font-weight: 600; min-width: 0; }
 .progress li span { font-family: var(--font-num); font-size: 12px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--panel); flex: 0 0 22px; }
 .progress li > button, .progress li > div { all: unset; display: flex; gap: 8px; align-items: center; width: 100%; min-width: 0; }
@@ -237,3 +237,5 @@ button.ghostbtn { background: transparent; cursor: pointer; font: inherit; font-
 .story .dx { margin: 6px 0 0; padding: 8px 10px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 6px 6px 0; }
 .formula { margin: 0; padding: 8px 10px; background: var(--soft); border-radius: 6px; font-size: 15px; font-weight: 600; }
 .brain { margin: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
+.sources .why { color: var(--muted); font-size: 0.92em; }
+.sources li { margin-bottom: 6px; }
