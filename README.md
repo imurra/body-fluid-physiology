@@ -1,19 +1,18 @@
-# Darrow–Yannet at the Bedside
+# Body Fluids at the Bedside
 
-Interactive case activity for teaching fluid compartments, tonicity and water shifts in medical education.
+Interactive case activity for teaching ECF volume, serum osmolality and water shifts, on a fluid compartment (Darrow–Yannet) diagram.
 
 **Live page:** https://imurra.github.io/Darrow_Yannet_Diagram/ (opens the activity)
 
 ## The activity — `bedside/`
-Six steps in bedside order, on a live Darrow–Yannet diagram:
-1. Danger (brain, circulation)
-2. Wet or dry (exam → ECF volume)
-3. Is sodium low, normal or high? (glucose explained in feedback when very high)
-4. Predict the cells (water in, out or no shift; drawn on the diagram)
-5. Read the kidney (urine osm and Na⁺ → cause)
-6. Treatment (where salt and water should go, then a fluid)
+Opening screen with the purpose, then five steps per case (diagnosis given):
+1. ECF volume (vital signs and exam; is the circulation affected?)
+2. Serum osmolality (2 × Na⁺ + glucose/18 + BUN/2.8)
+3. Cells (higher side, water movement, brain)
+4. Kidney (water, salt, appropriate or contributing)
+5. Causal chain and case summary
 
-4 core cases: diarrhea, SIADH, heart failure, hyperglycemia.
+4 core cases: diarrhea, SIADH, heart failure, HHS.
 Extra practice (optional, not yet clinician-reviewed; separate from the case menu): marathon runner, Addison's, elderly dehydration, lithium DI.
 `bedside/index.html` is self-contained and works offline.
 
@@ -22,7 +21,7 @@ GitHub Pages (Settings → Pages → Deploy from branch `main`, `/ (root)`).
 The site root redirects to `bedside/`. `_config.yml` keeps `archive/` off the published site.
 
 ## Model
-- Baseline 42 L total body water: ICF 28 L, ECF 14 L, 290 mOsm/L
+- Baseline 42 L total body water: ICF 28 L, ECF 14 L, 290 mOsm/kg
 - Effective osmoles (Na⁺ salts, glucose) stay in the ECF; ICF solute is fixed; urea crosses membranes freely
 - Directions of change have been checked for every case and treatment
 

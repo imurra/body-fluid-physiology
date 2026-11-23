@@ -227,3 +227,13 @@ button.ghostbtn { background: transparent; cursor: pointer; font: inherit; font-
 @media (max-width: 720px) { .extramenu { left: 0; right: auto; } }
 .extramenu .ghostbtn.small { text-align: left; justify-content: flex-start; }
 .flag { color: var(--bad); font-weight: 700; }
+
+/* Opening screen, diagnosis, formula, brain note (Nov 2026 revision) */
+.intro { display: flex; flex-direction: column; gap: 8px; max-width: 760px; margin: 16px auto 0; }
+.intro h2 { margin: 0 0 4px; }
+.intro h3 { margin: 10px 0 2px; }
+.intro p, .intro ul, .intro ol { margin: 0; }
+.intro ul, .intro ol { padding-left: 22px; display: flex; flex-direction: column; gap: 4px; }
+.story .dx { margin: 6px 0 0; padding: 8px 10px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 6px 6px 0; }
+.formula { margin: 0; padding: 8px 10px; background: var(--soft); border-radius: 6px; font-size: 15px; font-weight: 600; }
+.brain { margin: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
