@@ -178,6 +178,7 @@ function Intro({ onStart, started }: { onStart: () => void; started: boolean }) 
     <section className="panel intro" aria-label="About this activity">
       <h2>What this activity is for</h2>
       <p>Serum sodium answers two different questions. The <b>amount</b> of sodium in the body sets <b>ECF volume</b>, which you judge from the vital signs and the exam; it tells you whether the <b>circulation</b> is affected. The sodium <b>concentration</b> (with glucose) sets <b>serum osmolality</b>, which decides whether water moves into or out of <b>cells</b>; brain cells show it first.</p>
+      <p>Each case starts where a clinician starts: from the vital signs and mental status, is the <b>circulation</b>, the <b>brain</b>, both or neither affected? The rest of the case works out why.</p>
       <p>Each patient’s diagnosis is given. Your task is not to make the diagnosis. It is to work out what the disorder does to the body’s fluid compartments, and why.</p>
       <h3>Reading the diagram</h3>
       <ul>
