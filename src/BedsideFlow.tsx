@@ -18,9 +18,9 @@ const caseLabel = (i: number) => `Case ${i + 1} of ${CORE}`;
 const OSM_SNAPS: Record<-1 | 0 | 1, number> = { [-1]: 230, 0: NORMAL, 1: 350 };
 
 type Snap = -1 | 0 | 1;
-type Result = { aff?: boolean; vol?: boolean; osm?: boolean; why?: boolean; icf?: boolean; water?: boolean; salt?: boolean; role?: boolean };
+type Result = { aff?: boolean; vol?: boolean; osm?: boolean; icf?: boolean; water?: boolean; salt?: boolean; role?: boolean };
 const SCORED: [keyof Result, string][] = [
-  ['aff', 'What is affected'], ['vol', 'ECF volume'], ['osm', 'Osmolality'], ['why', 'Cells: gradient'], ['icf', 'Cells: water movement'],
+  ['aff', 'What is affected'], ['vol', 'ECF volume'], ['osm', 'Osmolality'], ['icf', 'Cells: water movement'],
   ['water', 'Kidney: water'], ['salt', 'Kidney: salt'], ['role', 'Kidney: response'],
 ];
 
@@ -154,8 +154,8 @@ function Diagram({ ecf, icf, osm, ecfOsm, showOsm, lines = [], preEcf, arrow, ar
         return (
           <g key={String(o.v)} {...tapProps(o)}>
             {ghost.onPick && <rect x={left} y={yy - 20} width={W - 12 - left} height={40} className="hit" />}
-            {o.at !== 0 && <line x1={mem + o.at * 56} x2={mem - o.at * 56} y1={yy} y2={yy} className={cls(o)} markerEnd="url(#fh)" />}
-            {pill(o, mem + (o.at === 0 ? 0 : 64), yy, o.at === 0 ? 'middle' : 'start')}
+            {o.at !== 0 && <line x1={mem + o.at * 50} x2={mem - o.at * 44} y1={yy} y2={yy} className={cls(o)} markerEnd="url(#fh)" />}
+            {pill(o, o.at === 0 ? mem : mem + 88, yy, o.at === 0 ? 'middle' : 'start')}
           </g>
         );
       })}
@@ -370,7 +370,6 @@ export default function BedsideFlow() {
   const [vol, setVol] = useState<Vol>();
   const [osmGuess, setOsmGuess] = useState<Snap>();
   const [osmChecked, setOsmChecked] = useState(false);
-  const [why, setWhy] = useState<Snap>();             // which side is higher: 1 cells higher (water in), -1 ECF higher (water out), 0 equal
   const [icfGuess, setIcfGuess] = useState<Snap>();
   const [icfChecked, setIcfChecked] = useState(false);
   const [water, setWater] = useState<'holding' | 'dumping'>();
@@ -422,7 +421,7 @@ export default function BedsideFlow() {
   const scaleMax = 380;
 
   const reset = (i: number) => {
-    setCi(i); setStep(0); setMaxStep(0); setAff(undefined); setVol(undefined); setOsmGuess(undefined); setOsmChecked(false); setWhy(undefined);
+    setCi(i); setStep(0); setMaxStep(0); setAff(undefined); setVol(undefined); setOsmGuess(undefined); setOsmChecked(false);
     setIcfGuess(undefined); setIcfChecked(false); setWater(undefined); setSalt(undefined); setRole(undefined); setKidneyChecked(false);
     setResult({}); showShift('after');
   };
@@ -471,7 +470,7 @@ export default function BedsideFlow() {
     if (n === 0) setAff(undefined);
     if (n === 1) setVol(undefined);
     if (n === 2) { setOsmGuess(undefined); setOsmChecked(false); }
-    if (n === 3) { setIcfGuess(undefined); setWhy(undefined); setIcfChecked(false); showShift('after'); }
+    if (n === 3) { setIcfGuess(undefined); setIcfChecked(false); showShift('after'); }
     if (n === 4) { setWater(undefined); setSalt(undefined); setRole(undefined); setKidneyChecked(false); }
   };
   const resetBtn = (n: number) => (
@@ -615,21 +614,16 @@ export default function BedsideFlow() {
             <div className="stepbox">
               <h3>4 · Cells</h3>
               <p className="lead">Serum (ECF) osmolality is {osmLab}; the cells start at {cellsStart} mOsm/kg.</p>
-              <p className="q">Which side has the higher osmolality?</p>
-              <Choice label="Higher osmolality" value={why} disabled={icfChecked}
-                options={[{ v: -1 as Snap, text: 'ECF' }, { v: 1 as Snap, text: 'Cells' }, { v: 0 as Snap, text: 'Neither: equal' }]}
-                onPick={setWhy} />
-              <p className="q">So water moves:</p>
+              <p className="q">Which way does water move?</p>
               {!icfChecked && <>
-                <p className="hint tapcue">Then tap an arrow on the diagram: into cells, no movement, or out of cells. Then Check.</p>
-                <button className="primary" disabled={icfGuess == null || why == null}
-                  onClick={() => { setIcfChecked(true); record({ why: why === truthIcfDir, icf: icfGuess === truthIcfDir }); showShift('after'); }}>Check</button>
+                <p className="hint tapcue">Tap an arrow on the diagram: into cells, no movement, or out of cells. Then Check.</p>
+                <button className="primary" disabled={icfGuess == null}
+                  onClick={() => { setIcfChecked(true); record({ icf: icfGuess === truthIcfDir }); showShift('after'); }}>Check</button>
               </>}
               {icfChecked && <>
-                <Verdict label="Higher osmolality" ok={why === truthIcfDir}>{truthIcfDir === 0
-                  ? <>ECF and cells are both {osmLab}: no gradient.</>
-                  : <>The {truthIcfDir > 0 ? 'cells' : 'ECF'} ({truthIcfDir > 0 ? cellsStart : osmLab}) {truthIcfDir > 0 ? 'were' : 'was'} higher than the {truthIcfDir > 0 ? 'ECF' : 'cells'} ({truthIcfDir > 0 ? osmLab : cellsStart}). Water moves toward the higher osmolality.</>}</Verdict>
-                <Verdict label="Water" ok={icfGuess === truthIcfDir}>{c.icfNote} ICF {f1(truth.icf)} L (normal 28).</Verdict>
+                <Verdict label="Water" ok={icfGuess === truthIcfDir}>{truthIcfDir === 0
+                  ? <>ECF and cells are both {osmLab}: no gradient. </>
+                  : <>The {truthIcfDir > 0 ? 'cells' : 'ECF'} ({truthIcfDir > 0 ? cellsStart : osmLab}) {truthIcfDir > 0 ? 'were' : 'was'} higher than the {truthIcfDir > 0 ? 'ECF' : 'cells'} ({truthIcfDir > 0 ? osmLab : cellsStart}), and water moves toward the higher osmolality. </>}{c.icfNote} ICF {f1(truth.icf)} L (normal 28).</Verdict>
                 <p className="brain"><b>Brain:</b> {c.brainNote}</p>
                 <div className="shiftbox">
                   <div className="choices" role="group" aria-label="Water movement">

@@ -12,7 +12,7 @@ An opening screen states the purpose and how to read the diagram. Each case then
 5. Kidney: retaining or excreting water, retaining or excreting salt, and whether the response is appropriate or contributing to the problem. Each answer gets its own labeled feedback.
 6. Case summary (unscored). The causal-chain ordering task was removed in Nov 2026; the chains stay in `cases.ts` as data.
 
-Steps 2–4 are answered by tapping outlines on the diagram (ECF width, ECF height, water arrow); there are no duplicate buttons. Each step highlights the chart rows and the part of the diagram it uses, and a one-line key under the diagram explains width and height. Scored out of 8 per case. The Reference page lists each source with a note on what it supports. Each step has a Reset button; only the first answer is scored. There is no treatment step.
+Steps 2–4 are answered by tapping outlines on the diagram (ECF width, ECF height, water arrow); there are no duplicate buttons. Each step highlights the chart rows and the part of the diagram it uses, and a one-line key under the diagram explains width and height. Scored out of 7 per case. The Reference page lists each source with a note on what it supports. Each step has a Reset button; only the first answer is scored. There is no treatment step.
 
 4 cases: acute infectious diarrhea; SIADH from small cell lung carcinoma; acute decompensated HFrEF; HHS. Each gives the full diagnosis name; the mechanism is held for the feedback and case summary.
 `index.html` is self-contained and works offline.
