@@ -11,7 +11,7 @@ Opening screen with the purpose, then six steps per case (diagnosis given):
 3. Serum osmolality (2 × Na⁺ + glucose/18 + BUN/2.8)
 4. Cells (higher side, water movement, brain)
 5. Kidney (water, salt, appropriate or contributing)
-6. Causal chain and case summary
+6. Case summary
 
 4 cases: diarrhea, SIADH, heart failure, HHS.
 `index.html` is self-contained and works offline.

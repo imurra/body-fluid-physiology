@@ -39,7 +39,7 @@ export type Case = {
   water: 'holding' | 'dumping'; salt: 'holding' | 'losing';
   waterNote: string; saltNote: string;
   kidneyRole: 'homeostatic' | 'problem'; roleNote: string;
-  // The causal chain, in order, for the end-of-case ordering task
+  // Causal chain, in order (kept as data; the ordering task was removed Nov 2026)
   chain: Link[];
   debrief: { who: string; what: string; findings: string; affected: string };
   // What is affected: circulation, brain, both or neither

@@ -5,10 +5,10 @@
  */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { BASE, labs, run } from './engine';
-import { CASES, Case, Vol, Danger } from './cases';
+import { CASES, Vol, Danger } from './cases';
 
 const TITLE = 'Body Fluid Physiology';
-const STEPS = ['What is affected', 'ECF volume', 'Osmolality', 'Cells', 'Kidney', 'Causal chain'];
+const STEPS = ['What is affected', 'ECF volume', 'Osmolality', 'Cells', 'Kidney', 'Summary'];
 const NORMAL = 290;                         // serum osmolality, mOsm/kg
 const OSM_LO = 275, OSM_HI = 295;           // reference range
 const DIRWORD: Record<-1 | 0 | 1, string> = { [-1]: 'low', 0: 'normal', 1: 'high' };
@@ -18,26 +18,11 @@ const caseLabel = (i: number) => `Case ${i + 1} of ${CORE}`;
 const OSM_SNAPS: Record<-1 | 0 | 1, number> = { [-1]: 250, 0: NORMAL, 1: 330 };
 
 type Snap = -1 | 0 | 1;
-type Result = { aff?: boolean; vol?: boolean; osm?: boolean; why?: boolean; icf?: boolean; water?: boolean; salt?: boolean; role?: boolean; chain?: boolean };
+type Result = { aff?: boolean; vol?: boolean; osm?: boolean; why?: boolean; icf?: boolean; water?: boolean; salt?: boolean; role?: boolean };
 const SCORED: [keyof Result, string][] = [
   ['aff', 'What is affected'], ['vol', 'ECF volume'], ['osm', 'Osmolality'], ['why', 'Cells: gradient'], ['icf', 'Cells: water movement'],
-  ['water', 'Kidney: water'], ['salt', 'Kidney: salt'], ['role', 'Kidney: response'], ['chain', 'Causal chain'],
+  ['water', 'Kidney: water'], ['salt', 'Kidney: salt'], ['role', 'Kidney: response'],
 ];
-
-// Fixed shuffle per case so the chain never starts in order.
-function shuffled(n: number, seed: number): number[] {
-  const a = Array.from({ length: n }, (_, i) => i);
-  let x = seed * 9301 + 49297;
-  for (let i = n - 1; i > 0; i--) { x = (x * 9301 + 49297) % 233280; const j = Math.floor((x / 233280) * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
-  return a.every((v, i) => v === i) ? a.reverse() : a;
-}
-
-// Flatten a chain into links, each with its position. Links that happen at the same time share a position.
-function flatChain(c: Case) {
-  const items: { text: string; pos: number }[] = [];
-  c.chain.forEach((l, pos) => (Array.isArray(l) ? l : [l]).forEach(text => items.push({ text, pos })));
-  return items;
-}
 
 const f0 = (n: number) => Math.round(n).toString();
 const f1 = (n: number) => n.toFixed(1);
@@ -193,7 +178,7 @@ function Intro({ onStart, started }: { onStart: () => void; started: boolean }) 
         <li><b>Osmolality</b> from Na⁺, glucose and BUN.</li>
         <li><b>Cells</b>: which way water moves, and what that means for the brain.</li>
         <li><b>Kidney</b>: what the urine shows, and whether the response is appropriate.</li>
-        <li><b>Causal chain</b>, then a case summary.</li>
+        <li><b>Case summary</b>: what happened, and the findings that showed it.</li>
       </ol>
       <p className="hint">Four cases, about 5 minutes each.</p>
       <div className="row"><button className="primary" onClick={onStart}>{started ? 'Back to the case' : 'Start case 1'}</button></div>
@@ -308,8 +293,6 @@ export default function BedsideFlow() {
   const [salt, setSalt] = useState<'holding' | 'losing'>();
   const [role, setRole] = useState<'homeostatic' | 'problem'>();
   const [kidneyChecked, setKidneyChecked] = useState(false);
-  const [order, setOrder] = useState<number[]>([]);   // chain links in the order tapped
-  const [chainChecked, setChainChecked] = useState(false);
   const [result, setResult] = useState<Result>({});
   const [flash, setFlash] = useState(0);
   const [history, setHistory] = useState<Record<string, Result>>({});
@@ -337,13 +320,11 @@ export default function BedsideFlow() {
   // Cells start at their normal effective osmolality plus this patient's urea (urea crosses cell membranes).
   const cellsStart = Math.round(BASE.icfEff / BASE.icf + labBun / 2.8);
   const scaleMax = 380;
-  const flat = useMemo(() => flatChain(c), [ci]);
-  const pool = useMemo(() => shuffled(flat.length, ci + 3), [ci]);
 
   const reset = (i: number) => {
     setCi(i); setStep(0); setMaxStep(0); setAff(undefined); setVol(undefined); setOsmGuess(undefined); setOsmChecked(false); setWhy(undefined);
     setIcfGuess(undefined); setIcfChecked(false); setWater(undefined); setSalt(undefined); setRole(undefined); setKidneyChecked(false);
-    setOrder([]); setChainChecked(false); setResult({}); showShift('after');
+    setResult({}); showShift('after');
   };
 
   const volOk = vol != null && (vol === c.volume || (c.volumeAlso ?? []).includes(vol));
@@ -377,16 +358,14 @@ export default function BedsideFlow() {
     if (n === 2) { setOsmGuess(undefined); setOsmChecked(false); }
     if (n === 3) { setIcfGuess(undefined); setWhy(undefined); setIcfChecked(false); showShift('after'); }
     if (n === 4) { setWater(undefined); setSalt(undefined); setRole(undefined); setKidneyChecked(false); }
-    if (n === 5) { setOrder([]); setChainChecked(false); }
   };
   const resetBtn = (n: number) => (
     <button className="linkbtn" onClick={() => redo(n)} title="Clear your answer to this step and try again. Your first answer is still the one scored.">Reset this step</button>
   );
-  const answered = [aff != null, vol != null, osmChecked, icfChecked, kidneyChecked, chainChecked][step] ?? false;
+  const answered = [aff != null, vol != null, osmChecked, icfChecked, kidneyChecked, true][step] ?? false;
   const pts = SCORED.filter(([k]) => result[k] === true).length;
 
   const start = () => { setShowIntro(false); setStarted(true); };
-  const chainOk = chainChecked && order.every((k, i) => flat[k].pos === flat[i].pos);
 
   return (
     <div className="dy">
@@ -584,7 +563,7 @@ export default function BedsideFlow() {
                 <Verdict label="Water" ok={water === c.water}>{c.waterNote}</Verdict>
                 <Verdict label="Salt" ok={salt === c.salt}>{c.saltNote}</Verdict>
                 <Verdict label="Response" ok={role === c.kidneyRole}>{c.roleNote}</Verdict>
-                <div className="row"><button className="primary" onClick={() => go(5)}>Next: causal chain</button>{resetBtn(4)}</div>
+                <div className="row"><button className="primary" onClick={() => { go(5); setHistory(h => ({ ...h, [c.id]: result })); }}>Next: case summary</button>{resetBtn(4)}</div>
               </>}
             </div>
           )}
@@ -593,42 +572,9 @@ export default function BedsideFlow() {
             const done = Object.keys({ ...history, [c.id]: result }).length;
             return (
               <div className="stepbox">
-                <h3>6 · Causal chain</h3>
-                <div className="chainbox">
-                  <p className="q">Tap the links in order, from the cause to the bedside findings.</p>
-                  {c.chain.some(Array.isArray) && <p className="hint">Slots with the same number happen at the same time; either order is accepted.</p>}
-                  <ol className="chainlist">
-                    {flat.map((slot, i) => {
-                      const k = order[i];
-                      const right = chainChecked && k != null && flat[k].pos === slot.pos;
-                      const same = c.chain[slot.pos];
-                      return <li key={i} value={slot.pos + 1} className={chainChecked ? (right ? 'right' : 'wrong') : k == null ? 'empty' : ''}>
-                        {k == null ? ' ' : flat[k].text}
-                        {chainChecked && !right && <span className="should">should be: {Array.isArray(same) ? same.join(' / ') : same}</span>}
-                      </li>;
-                    })}
-                  </ol>
-                  {!chainChecked && <div className="choices chainpool" role="group" aria-label="Links">
-                    {pool.map(k => (
-                      <button key={k} disabled={order.includes(k)} onClick={() => setOrder(o => [...o, k])}>{flat[k].text}</button>
-                    ))}
-                  </div>}
-                  {!chainChecked && <div className="row">
-                    <button className="primary" disabled={order.length < flat.length}
-                      onClick={() => {
-                        const ok = order.every((k, i) => flat[k].pos === flat[i].pos);
-                        setChainChecked(true); record({ chain: ok });
-                        setHistory(h => ({ ...h, [c.id]: { ...result, chain: result.chain ?? ok } }));
-                      }}>Check</button>
-                    <button className="linkbtn" disabled={!order.length} onClick={() => setOrder(o => o.slice(0, -1))}>Undo</button>
-                    <button className="linkbtn" disabled={!order.length} onClick={() => setOrder([])}>Clear</button>
-                  </div>}
-                  {chainChecked && <Verdict ok={chainOk}>{chainOk ? 'Each link leads to the next.' : 'Compare with the corrected order: each link leads to the next.'}</Verdict>}
-                  {chainChecked && <div className="row">{resetBtn(5)}</div>}
-                </div>
-                {chainChecked && <>
+                <>
                   <div className="debrief">
-                    <h3>Case summary: {c.title}</h3>
+                    <h3>6 · Case summary: {c.title}</h3>
                     <dl>
                       <div><dt>Patient</dt><dd>{c.debrief.who}</dd></div>
                       <div><dt>Diagnosis</dt><dd>{c.dx}</dd></div>
@@ -647,7 +593,7 @@ export default function BedsideFlow() {
                   <div className="row">
                     {ci < CORE - 1 && <button className="primary" onClick={() => reset(ci + 1)}>Next case</button>}
                   </div>
-                </>}
+                </>
               </div>
             );
           })()}

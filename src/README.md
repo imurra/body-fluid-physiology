@@ -10,16 +10,16 @@ An opening screen states the purpose and how to read the diagram. Each case then
 3. Serum osmolality (low, normal, high), calculated as 2 × Na⁺ + glucose/18 + BUN/2.8. After Check, the ECF takes its new height while the cells stay at 290.
 4. Cells: which side has the higher osmolality, and which way water moves; then what that means for the brain.
 5. Kidney: retaining or excreting water, retaining or excreting salt, and whether the response is appropriate or contributing to the problem. Each answer gets its own labeled feedback.
-6. Causal chain (links that happen at the same time share a number; either order is accepted), then a case summary.
+6. Case summary (unscored). The causal-chain ordering task was removed in Nov 2026; the chains stay in `cases.ts` as data.
 
-Scored out of 9 per case. The Reference page lists each source with a note on what it supports. Each step has a Reset button; only the first answer is scored. There is no treatment step.
+Scored out of 8 per case. The Reference page lists each source with a note on what it supports. Each step has a Reset button; only the first answer is scored. There is no treatment step.
 
 4 cases: acute infectious diarrhea; SIADH from small cell lung carcinoma; acute decompensated HFrEF; HHS. Each gives the full diagnosis name; the mechanism is held for the feedback and case summary.
 `index.html` is self-contained and works offline.
 
 ## Source
 - `src/engine.ts` — mass-balance model (salt, glucose, urea; ICF solute fixed)
-- `src/cases.ts` — cases, expected answers, causal chains and summaries (treatment grades kept as data but not shown)
+- `src/cases.ts` — cases, expected answers, causal chains (not shown) and summaries (treatment grades kept as data but not shown)
 - `src/BedsideFlow.tsx` — React interface
 - `src/styles.css` — styles (light and dark)
 
