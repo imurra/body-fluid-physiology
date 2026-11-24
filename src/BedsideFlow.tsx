@@ -232,12 +232,13 @@ const RefRanges = () => (
 const UrineGuide = () => (
   <>
     <table className="reftable"><tbody>
+      <tr><td>Urine glucose present (e.g., 4+)</td><td>Excreting water: glucose holds water in the tubule (osmotic diuresis), so a high U<sub>osm</sub> does not mean ADH is acting</td></tr>
       <tr><td>U<sub>osm</sub> ≤ 100 mOsm/kg</td><td>Excreting water: maximally dilute urine (ADH suppressed or not acting)</td></tr>
       <tr><td>U<sub>osm</sub> &gt; 100 mOsm/kg</td><td>Retaining water: ADH is acting</td></tr>
       <tr><td>U<sub>Na</sub> ≤ 30 mEq/L</td><td>Retaining salt: the kidney senses low effective volume</td></tr>
       <tr><td>U<sub>Na</sub> &gt; 30 mEq/L</td><td>Excreting salt (normal volume, diuretics, or renal salt loss)</td></tr>
     </tbody></table>
-    <p className="hint">Cutoffs from the European hyponatraemia guideline (Spasovski et al., 2014). Exception: a large amount of glucose in the urine raises urine osmolality while the kidney is losing water (osmotic diuresis).</p>
+    <p className="hint">Check for urine glucose first. Cutoffs from Spasovski et al., 2014.</p>
   </>
 );
 
