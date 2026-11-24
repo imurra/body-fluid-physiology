@@ -274,12 +274,16 @@ function Intro({ onStart, started }: { onStart: () => void; started: boolean }) 
 // ---------- Reference ----------
 // Each source carries a note on what it supports in this activity.
 const SOURCES: { text: string; url?: string; why: string }[] = [
+  { text: 'Asim M, Alkadi MM, Asim H, Ghaffar A. Dehydration and volume depletion: how to handle the misconceptions. World J Nephrol 2019;8:23–32', url: 'https://doi.org/10.5527/wjn.v8.i1.23',
+    why: 'Names related misconceptions: “dehydration” used for ECF volume depletion, and hyponatremic, isonatremic and hypernatremic subtypes, which belong to volume depletion and depend on what is lost and what the patient drinks (case 1).' },
   { text: 'Bagby SP, Bennett WM. Differentiating disorders of ECF volume/Na content regulation from disorders of water/Na concentration regulation. Adv Physiol Educ 1998;20:S169–S184', url: 'https://doi.org/10.1152/advances.1998.275.6.S169',
     why: 'Describes the confusion this activity targets: the amount of sodium (ECF volume) versus its concentration (osmolality).' },
   { text: 'Cheng HM, Hoe SZ. Students lose balance over the yin-yang of sodium physiology. BLDE Univ J Health Sci 2018;3:54–57', url: 'https://doaj.org/article/71b5956a6951442aba58dff52ca47bf4',
     why: 'Shows that students still fail to separate sodium balance from sodium concentration.' },
   { text: 'Darrow DC, Yannet H. The changes in the distribution of body water accompanying increase and decrease in extracellular electrolyte. J Clin Invest 1935;14:266–275', url: 'https://doi.org/10.1172/JCI100674',
     why: 'Origin of the fluid compartment diagram used here (volume on one axis, osmolality on the other).' },
+  { text: 'Mange K, Matsuura D, Cizman B, et al. Language guiding therapy: the case of dehydration versus volume depletion. Ann Intern Med 1997;127:848–853', url: 'https://pubmed.ncbi.nlm.nih.gov/9382413/',
+    why: 'Separates dehydration (water deficit with hypertonicity, affecting cells) from ECF volume depletion (loss of total body sodium, affecting the circulation): the same split this activity teaches.' },
   { text: 'Spasovski G, et al. Clinical practice guideline on diagnosis and treatment of hyponatraemia. Eur J Endocrinol 2014;170:G1–G47', url: 'https://doi.org/10.1530/EJE-13-1020',
     why: 'Source of the urine cutoffs in the Kidney step (urine osmolality 100 mOsm/kg; urine Na⁺ 30 mEq/L) and of grading hyponatremia symptoms by severity, used in “What is affected?” (nausea counts as a moderately severe symptom).' },
   { text: 'Verbalis JG, et al. Diagnosis, evaluation, and treatment of hyponatremia: expert panel recommendations. Am J Med 2013;126:S1–S42', url: 'https://doi.org/10.1016/j.amjmed.2013.07.006',
