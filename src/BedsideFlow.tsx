@@ -15,7 +15,7 @@ const DIRWORD: Record<-1 | 0 | 1, string> = { [-1]: 'low', 0: 'normal', 1: 'high
 const VOLWORD: Record<Vol, string> = { dry: 'decreased', euvolemic: 'normal', wet: 'increased' };
 const CORE = CASES.length;
 const caseLabel = (i: number) => `Case ${i + 1} of ${CORE}`;
-const OSM_SNAPS: Record<-1 | 0 | 1, number> = { [-1]: 250, 0: NORMAL, 1: 330 };
+const OSM_SNAPS: Record<-1 | 0 | 1, number> = { [-1]: 230, 0: NORMAL, 1: 350 };
 
 type Snap = -1 | 0 | 1;
 type Result = { aff?: boolean; vol?: boolean; osm?: boolean; why?: boolean; icf?: boolean; water?: boolean; salt?: boolean; role?: boolean };
@@ -40,9 +40,14 @@ type DiagramProps = {
   arrow?: Snap | null;               // water across the membrane: 1 into cells, -1 out, 0 none
   arrowGuess?: boolean;              // the arrow is the student's prediction
   max?: number;                      // top of the osmolality axis
+  focus?: Focus;                     // the part of the diagram the current step is about
+  ghost?: Ghost;                     // faint, tappable outlines for the answer options
 };
+type Focus = 'labels' | 'width' | 'height' | 'membrane' | 'dim';
+// Answer options drawn on the diagram. width: ECF litres; height: osmolality; arrow: 1 in, 0 none, -1 out.
+type Ghost = { kind: 'width' | 'height' | 'arrow'; options: { v: any; label: string; at: number }[]; chosen?: any; onPick?: (v: any) => void };
 
-function Diagram({ ecf, icf, osm, ecfOsm, showOsm, lines = [], preEcf, arrow, arrowGuess, max = 380 }: DiagramProps) {
+function Diagram({ ecf, icf, osm, ecfOsm, showOsm, lines = [], preEcf, arrow, arrowGuess, max = 380, focus, ghost }: DiagramProps) {
   const W = 600, H = 320, PX = 9, left = 52, mem = left + 36 * PX, top = 24, bottom = 262, MAX = max;
   const y = (o: number) => bottom - (Math.min(o, MAX) / MAX) * (bottom - top);
   const icfY = y(osm);
@@ -52,9 +57,19 @@ function Diagram({ ecf, icf, osm, ecfOsm, showOsm, lines = [], preEcf, arrow, ar
   const lowY = Math.max(icfY, ecfY);
   const ay = lowY + (bottom - lowY) * 0.42;
   const word = arrowGuess ? 'your prediction: ' : '';
+  const ecfW = (ecf ?? BASE.ecf) * PX;         // width used for focus marks and height outlines
+  const pick = (v: any) => ghost?.onPick && ghost.onPick(v);
+  const shown = ghost ? (ghost.onPick ? ghost.options : ghost.options.filter(o => o.v === ghost.chosen)) : [];
+  const tag = (o: { v: any; label: string }) => (!ghost?.onPick ? `your answer: ${o.label}` : o.label);
+  const cls = (o: { v: any }) => `ghost${o.v === ghost?.chosen ? ' chosen' : ''}`;
+  const tapProps = (o: { v: any; label: string }) => ghost?.onPick ? {
+    className: 'pickable', role: 'button', tabIndex: 0, 'aria-label': o.label, onClick: () => pick(o.v),
+    onKeyDown: (e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(o.v); } },
+  } : {};
+  const byY = ghost?.kind === 'height' ? [...ghost.options].sort((a, b) => b.at - a.at) : [];
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="dy-svg" role="img"
+    <svg viewBox={`0 0 ${W} ${H}`} className={`dy-svg${focus === 'dim' ? ' dimmed' : ''}`} role="img"
       aria-label={`ICF ${f1(icf)} liters at ${f0(osm)} mOsm/kg${ecf != null ? `, ECF ${f1(ecf)} liters at ${f0(ecfOsm ?? osm)} mOsm/kg` : ''}`}>
       {[0, 100, 200, 300, 400].filter(t => t <= MAX).map(t => (
         <g key={t}>
@@ -75,7 +90,7 @@ function Diagram({ ecf, icf, osm, ecfOsm, showOsm, lines = [], preEcf, arrow, ar
       <rect x={mem - BASE.icf * PX} y={y(NORMAL)} width={BASE.icf * PX} height={bottom - y(NORMAL)} className="normal" />
       <rect x={mem} y={y(NORMAL)} width={BASE.ecf * PX} height={bottom - y(NORMAL)} className="normal" />
       <line x1={left} x2={W - 12} y1={y(NORMAL)} y2={y(NORMAL)} className="ref" />
-      <text x={W - 14} y={y(NORMAL) - 6} textAnchor="end" className="reftext">normal {NORMAL}</text>
+      <text x={left + 6} y={y(NORMAL) - 6} className="reftext">normal {NORMAL}</text>
 
       {lines.map(l => (
         <g key={l.kind}>
@@ -89,7 +104,62 @@ function Diagram({ ecf, icf, osm, ecfOsm, showOsm, lines = [], preEcf, arrow, ar
         <text x={mem + 8} y={ecfY - 6} className="osmtext ecf-t">ECF {f0(ecfOsm ?? osm)}</text>
       </>}
 
-      <line x1={mem} x2={mem} y1={top - 8} y2={bottom} className="membrane" />
+      <defs>
+        <marker id="fh" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" className="focushead" /></marker>
+      </defs>
+
+      {ghost?.kind === 'width' && (() => {
+        const asc = [...ghost.options].sort((p, q) => p.at - q.at);
+        return shown.map(o => {
+          const k = asc.findIndex(p => p.v === o.v);
+          const x0 = mem + (k === 0 ? 0 : (asc[k - 1].at + o.at) / 2 * PX);
+          const x1 = k === asc.length - 1 ? W - 12 : mem + (asc[k + 1].at + o.at) / 2 * PX;
+          const lx = ghost.onPick ? (x0 + x1) / 2 : mem + o.at * PX - 4;
+          return (
+            <g key={String(o.v)} {...tapProps(o)}>
+              {ghost.onPick && <rect x={x0} y={top - 8} width={x1 - x0} height={bottom - top + 8} className="hit" />}
+              <rect x={mem} y={ecfY} width={o.at * PX} height={bottom - ecfY} className={cls(o)} />
+              <text x={lx} y={ecfY + 22 + (ghost.onPick && k === 1 ? 22 : 0)} textAnchor={ghost.onPick ? 'middle' : 'end'} className={`ghostlab${o.v === ghost.chosen ? ' chosen' : ''}`}>{tag(o)}</text>
+            </g>
+          );
+        });
+      })()}
+      {ghost?.kind === 'height' && shown.map(o => {
+        const k = byY.findIndex(b => b.v === o.v);
+        const yy = y(o.at), up = k > 0 ? y(byY[k - 1].at) : yy - 24, dn = k < byY.length - 1 ? y(byY[k + 1].at) : yy + 24;
+        return (
+          <g key={String(o.v)} {...tapProps(o)}>
+            {ghost.onPick && (() => { const t0 = k === 0 ? top - 8 : (yy + up) / 2, b0 = k === byY.length - 1 ? bottom : (yy + dn) / 2; return <rect x={mem} y={t0} width={W - 12 - mem} height={b0 - t0} className="hit" />; })()}
+            <line x1={mem} x2={mem + ecfW} y1={yy} y2={yy} className={cls(o)} />
+            <text x={mem + ecfW + 34} y={yy + 4} className={`ghostlab${o.v === ghost.chosen ? ' chosen' : ''}`}>{tag(o)}</text>
+          </g>
+        );
+      })}
+      {ghost?.kind === 'arrow' && shown.map(o => {
+        const yy = ay + (ghost.onPick ? -o.at * 40 : 0);
+        return (
+          <g key={String(o.v)} {...tapProps(o)}>
+            {ghost.onPick && <rect x={left} y={yy - 20} width={W - 12 - left} height={40} className="hit" />}
+            {o.at !== 0 && <line x1={mem + o.at * 56} x2={mem - o.at * 56} y1={yy} y2={yy} className={cls(o)} markerEnd="url(#fh)" />}
+            <text x={mem + (o.at === 0 ? 0 : 64)} y={yy + 4} textAnchor={o.at === 0 ? 'middle' : 'start'} className={`ghostlab${o.v === ghost.chosen ? ' chosen' : ''}`}>{tag(o)}</text>
+          </g>
+        );
+      })}
+
+      {focus === 'labels' && <>
+        <text x={mem - (BASE.icf * PX) / 2} y={top + 16} textAnchor="middle" className="focuslab">brain (cells)</text>
+        <text x={mem + (BASE.ecf * PX) / 2} y={top + 16} textAnchor="middle" className="focuslab">circulation (ECF)</text>
+      </>}
+      {focus === 'width' && <>
+        <line x1={mem + 3} x2={mem + ecfW - 3} y1={top + 10} y2={top + 10} className="focusmark" markerStart="url(#fh)" markerEnd="url(#fh)" />
+        <text x={mem + ecfW + 8} y={top + 14} className="focuslab">width = volume</text>
+      </>}
+      {focus === 'height' && <>
+        <line x1={mem + ecfW + 14} x2={mem + ecfW + 14} y1={bottom - 3} y2={ecfY + 3} className="focusmark" markerStart="url(#fh)" markerEnd="url(#fh)" />
+        <text x={left + 8} y={top + 14} className="focuslab">height = osmolality</text>
+      </>}
+
+      <line x1={mem} x2={mem} y1={top - 8} y2={bottom} className={`membrane${focus === 'membrane' ? ' focus' : ''}`} />
       <text x={mem} y={top - 12} textAnchor="middle" className="tick">cell membrane</text>
 
       {arrow === 1 && <g className={`arrow ${arrowGuess ? 'guess' : ''}`}>
@@ -106,7 +176,7 @@ function Diagram({ ecf, icf, osm, ecfOsm, showOsm, lines = [], preEcf, arrow, ar
 
       <text x={mem - (icf * PX) / 2} y={bottom - 14} textAnchor="middle" className="lab icf-t">ICF</text>
       {ecf != null && <text x={mem + (ecf * PX) / 2} y={bottom - 14} textAnchor="middle" className="lab ecf-t">ECF</text>}
-      {ecf == null && <text x={mem + 12} y={(top + bottom) / 2 + 30} className="tick">ECF: judged in step 2</text>}
+      {ecf == null && !ghost && <text x={mem + 12} y={(top + bottom) / 2 + 30} className="tick">ECF: judged in step 2</text>}
 
       <line x1={left} x2={W - 12} y1={bottom} y2={bottom} className="axis" />
       {[30, 20, 10].map(v => <text key={`i${v}`} x={mem - v * PX} y={bottom + 16} textAnchor="middle" className="tick">{v}</text>)}
@@ -336,14 +406,29 @@ export default function BedsideFlow() {
   const final = { ecf: truth.ecf, icf: truth.icf, osm: osmLab };
   const osmLine: Line = { v: osmLab, text: `Serum osmolality ${osmLab}`, kind: 'truth' };
   const guessLine = (g: Snap | undefined): Line[] => g != null ? [{ v: OSM_SNAPS[g], text: 'your answer', kind: 'pred' }] : [];
+  // Chart rows the current step uses are highlighted; the others are dimmed.
+  const ROWS: Record<number, string[]> = { 0: ['vitals', 'mental'], 1: ['exam', 'tests'], 2: ['serum'], 4: ['urine'] };
+  const rowCls = (k: string) => { const on = ROWS[step]; return on ? (on.includes(k) ? 'hl' : 'dim') : undefined; };
+  // The same handlers serve the panel buttons and the outlines on the diagram.
+  const pickVol = (v: Vol) => { if (vol != null) return; setVol(v); setFlash(f => f + 1); record({ vol: v === c.volume || (c.volumeAlso ?? []).includes(v) }); };
+  const pickOsm = (v: Snap) => { if (osmChecked) return; setOsmGuess(v); setFlash(f => f + 1); };
+  const pickIcf = (v: Snap) => { if (icfChecked) return; setIcfGuess(v); setFlash(f => f + 1); };
+  const VOL_OPTS = [{ v: 'dry' as Vol, label: 'decreased', at: 8 }, { v: 'euvolemic' as Vol, label: 'normal', at: BASE.ecf }, { v: 'wet' as Vol, label: 'increased', at: 20 }];
+  const OSM_OPTS = [{ v: -1 as Snap, label: 'low', at: OSM_SNAPS[-1] }, { v: 0 as Snap, label: 'normal', at: OSM_SNAPS[0] }, { v: 1 as Snap, label: 'high', at: OSM_SNAPS[1] }];
+  const ICF_OPTS = [{ v: 1 as Snap, label: 'water into cells', at: 1 }, { v: 0 as Snap, label: 'no movement', at: 0 }, { v: -1 as Snap, label: 'water out of cells', at: -1 }];
   let diag: React.ReactNode;
-  if (step === 0 || (step === 1 && vol == null)) diag = <Diagram max={scaleMax} ecf={null} icf={BASE.icf} osm={cellsStart} />;
-  else if (step === 1 || (step === 2 && !osmChecked)) diag = <Diagram max={scaleMax} {...examEcf} lines={step === 2 ? guessLine(osmGuess) : []} />;
-  else if (step === 2) diag = <Diagram max={scaleMax} {...gradient} showOsm lines={[osmLine, ...(osmGuess != null && osmGuess !== osmDir ? guessLine(osmGuess).map(l => ({ ...l, kind: 'wrong' as const })) : [])]} />;
-  else if (step === 3 && (!icfChecked || shift === 'before'))
-    diag = <Diagram max={scaleMax} {...gradient} showOsm arrow={icfChecked ? truthIcfDir : icfGuess ?? null} arrowGuess={!icfChecked} />;
-  else if (step === 3) diag = <Diagram max={scaleMax} {...final} showOsm arrow={truthIcfDir} />;
-  else diag = <Diagram max={scaleMax} {...final} showOsm />;
+  if (step === 0) diag = <Diagram max={scaleMax} ecf={null} icf={BASE.icf} osm={cellsStart} focus="labels" />;
+  else if (step === 1 && vol == null)
+    diag = <Diagram max={scaleMax} ecf={null} icf={BASE.icf} osm={cellsStart} focus="width" ghost={{ kind: 'width', options: VOL_OPTS, onPick: pickVol }} />;
+  else if (step === 1) diag = <Diagram max={scaleMax} {...examEcf} focus="width" ghost={{ kind: 'width', options: VOL_OPTS, chosen: vol }} />;
+  else if (step === 2 && !osmChecked)
+    diag = <Diagram max={scaleMax} {...examEcf} focus="height" ghost={{ kind: 'height', options: OSM_OPTS, chosen: osmGuess, onPick: pickOsm }} />;
+  else if (step === 2) diag = <Diagram max={scaleMax} {...gradient} showOsm focus="height" lines={[osmLine, ...(osmGuess != null && osmGuess !== osmDir ? guessLine(osmGuess).map(l => ({ ...l, kind: 'wrong' as const })) : [])]} />;
+  else if (step === 3 && !icfChecked)
+    diag = <Diagram max={scaleMax} {...gradient} showOsm focus="membrane" ghost={{ kind: 'arrow', options: ICF_OPTS, chosen: icfGuess, onPick: pickIcf }} />;
+  else if (step === 3 && shift === 'before') diag = <Diagram max={scaleMax} {...gradient} showOsm focus="membrane" arrow={truthIcfDir} />;
+  else if (step === 3) diag = <Diagram max={scaleMax} {...final} showOsm focus="membrane" arrow={truthIcfDir} />;
+  else diag = <Diagram max={scaleMax} {...final} showOsm focus={step === 4 ? 'dim' : undefined} />;
 
   // Only the first answer to each question is scored; Reset and Back never change it.
   const record = (r: Result) => setResult(prev => {
@@ -414,18 +499,18 @@ export default function BedsideFlow() {
           </div>
 
           <dl className="chart" aria-label="Patient chart">
-            <div><dt>Vital signs</dt><dd><span>{c.danger.circulation}</span></dd></div>
-            <div><dt>Mental status</dt><dd><span>{c.danger.brain}</span></dd></div>
-            {maxStep >= 1 && <div><dt>Exam</dt><dd>{c.exam.map(x => <span key={x}>{x}</span>)}</dd></div>}
-            {maxStep >= 1 && c.tests && c.tests.length > 0 && <div><dt>Other tests</dt><dd>{c.tests.map(x => <span key={x}>{x}</span>)}</dd></div>}
-            {maxStep >= 2 && <div><dt>Serum</dt><dd>
+            <div className={rowCls('vitals')}><dt>Vital signs</dt><dd><span>{c.danger.circulation}</span></dd></div>
+            <div className={rowCls('mental')}><dt>Mental status</dt><dd><span>{c.danger.brain}</span></dd></div>
+            {maxStep >= 1 && <div className={rowCls('exam')}><dt>Exam</dt><dd>{c.exam.map(x => <span key={x}>{x}</span>)}</dd></div>}
+            {maxStep >= 1 && c.tests && c.tests.length > 0 && <div className={rowCls('tests')}><dt>Other tests</dt><dd>{c.tests.map(x => <span key={x}>{x}</span>)}</dd></div>}
+            {maxStep >= 2 && <div className={rowCls('serum')}><dt>Serum</dt><dd>
               <span className="v">Na⁺ {labNa} mEq/L</span>
               <span className="v">Glucose {labGlu} mg/dL</span>
               <span className="v">BUN {labBun} mg/dL</span>
               <span className="v">Hct {f0(L.hct)}%</span>
               {(osmChecked || maxStep > 2) && <span className="v">Osmolality {osmLab} mOsm/kg (measured)</span>}
             </dd></div>}
-            {maxStep >= 4 && <div><dt>Urine</dt><dd>
+            {maxStep >= 4 && <div className={rowCls('urine')}><dt>Urine</dt><dd>
               <span className="v">Osmolality {c.urine.osm} mOsm/kg</span>
               <span className="v">Na⁺ {c.urine.na} mEq/L</span>
               {c.urine.extra && <span>{c.urine.extra}</span>}
@@ -460,9 +545,7 @@ export default function BedsideFlow() {
               <h3>2 · ECF volume</h3>
               <p className="lead">Use the exam: neck veins, mucous membranes, edema, weight, orthostatic change.</p>
               <p className="q">ECF volume is:</p>
-              <Choice label="ECF volume" value={vol} disabled={vol != null}
-                options={[{ v: 'dry' as Vol, text: 'Decreased' }, { v: 'euvolemic' as Vol, text: 'Normal' }, { v: 'wet' as Vol, text: 'Increased' }]}
-                onPick={v => { setVol(v); setFlash(f => f + 1); record({ vol: v === c.volume || (c.volumeAlso ?? []).includes(v) }); }} />
+              {vol == null && <p className="hint tapcue">Tap an outline on the diagram: decreased, normal or increased.</p>}
               {vol != null && <>
                 <Verdict ok={volOk}>{c.volumeNote}</Verdict>
                 <p className="hint">The diagram now shows this patient’s ECF volume, {f1(truth.ecf)} L (dashed = normal, 14 L). Its height, the osmolality, comes next.</p>
@@ -477,15 +560,12 @@ export default function BedsideFlow() {
               <p className="lead">Na⁺ and glucose are the main ECF solutes. Calculate serum osmolality from the serum results above:</p>
               <p className="formula mono">2 × Na⁺ + glucose/18 + BUN/2.8</p>
               <details className="hintbox">
-                <summary>Reference ranges</summary>
+                <summary>Show reference values</summary>
                 <RefRanges />
               </details>
               <p className="q">Serum osmolality is:</p>
-              <Choice label="Osmolality" value={osmGuess} disabled={osmChecked}
-                options={[{ v: -1 as Snap, text: 'Low' }, { v: 0 as Snap, text: 'Normal' }, { v: 1 as Snap, text: 'High' }]}
-                onPick={v => { setOsmGuess(v); setFlash(f => f + 1); }} />
               {!osmChecked && <>
-                <p className="hint">Your answer is drawn as a dashed line on the diagram.</p>
+                <p className="hint tapcue">Tap a line on the diagram: low, normal or high. Then Check.</p>
                 <button className="primary" disabled={osmGuess == null}
                   onClick={() => { setOsmChecked(true); record({ osm: osmGuess === osmDir }); }}>Check</button>
               </>}
@@ -510,11 +590,8 @@ export default function BedsideFlow() {
                 options={[{ v: -1 as Snap, text: 'ECF' }, { v: 1 as Snap, text: 'Cells' }, { v: 0 as Snap, text: 'Neither: equal' }]}
                 onPick={setWhy} />
               <p className="q">So water moves:</p>
-              <Choice label="Water movement" value={icfGuess} disabled={icfChecked}
-                options={[{ v: 1 as Snap, text: 'Into cells (cells swell)' }, { v: 0 as Snap, text: 'No net movement' }, { v: -1 as Snap, text: 'Out of cells (cells shrink)' }]}
-                onPick={v => { setIcfGuess(v); setFlash(f => f + 1); }} />
               {!icfChecked && <>
-                <p className="hint">Your prediction is drawn as an arrow.</p>
+                <p className="hint tapcue">Then tap an arrow on the diagram: into cells, no movement, or out of cells. Then Check.</p>
                 <button className="primary" disabled={icfGuess == null || why == null}
                   onClick={() => { setIcfChecked(true); record({ why: why === truthIcfDir, icf: icfGuess === truthIcfDir }); showShift('after'); }}>Check</button>
               </>}
@@ -545,7 +622,7 @@ export default function BedsideFlow() {
               <h3>5 · Kidney</h3>
               <p className="lead">Urine osmolality {c.urine.osm} mOsm/kg, urine Na⁺ {c.urine.na} mEq/L{c.urine.extra ? `, ${c.urine.extra.toLowerCase()}` : ''}.</p>
               <details className="hintbox">
-                <summary>Reading the urine</summary>
+                <summary>Show how to read the urine</summary>
                 <UrineGuide />
               </details>
               <p className="q">Water: the kidney is</p>
@@ -613,6 +690,7 @@ export default function BedsideFlow() {
               <span><i className="sw ecf" />ECF</span>
               <span><i className="sw normal" />normal</span>
             </div>
+            <p className="diagkey">Width = volume (circulation) · Height = osmolality (cells, brain) · Water moves until the heights match</p>
           </div>
         </section>
       </div>

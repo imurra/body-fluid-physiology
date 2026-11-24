@@ -239,3 +239,31 @@ button.ghostbtn { background: transparent; cursor: pointer; font: inherit; font-
 .brain { margin: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
 .sources .why { color: var(--muted); font-size: 0.92em; }
 .sources li { margin-bottom: 6px; }
+
+/* Focus: what to read and where to look (Nov 2026) */
+.chart > div { transition: opacity .2s; }
+.chart > div.dim { opacity: .4; }
+.chart > div.hl { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); border-radius: 6px; padding: 4px 6px; margin: -2px -6px; }
+.dy-svg.dimmed > *:not(defs) { opacity: .35; }
+.dy-svg .focuslab { fill: var(--accent); font-family: var(--font-body); font-weight: 700; font-size: 13px; }
+.dy-svg .focusmark { stroke: var(--accent); stroke-width: 2.5; }
+.dy-svg .focushead { fill: var(--accent); }
+.dy-svg .membrane.focus { stroke: var(--accent); stroke-width: 5; }
+.dy-svg .ghost { fill: none; stroke: var(--accent); stroke-width: 2; stroke-dasharray: 4 4; stroke-opacity: .7; }
+.dy-svg .ghost.chosen { stroke-width: 3; stroke-dasharray: none; stroke-opacity: 1; }
+.dy-svg .ghostlab { fill: var(--accent); font-family: var(--font-body); font-size: 16px; font-weight: 600; }
+.dy-svg .ghostlab.chosen { font-weight: 700; }
+.dy-svg .hit { fill: transparent; }
+.dy-svg .pickable { cursor: pointer; }
+.dy-svg * { pointer-events: none; }
+.dy-svg .hit { pointer-events: all; }
+.dy-svg .pickable:focus-visible { outline: none; }
+.dy-svg .pickable:focus-visible .ghost { stroke-width: 4; stroke-opacity: 1; }
+.dy-svg .pickable:hover .ghost { stroke-opacity: 1; stroke-width: 3; }
+.diagkey { margin: 6px 0 0; font-size: 13px; font-weight: 600; color: var(--ink); }
+.hintbox summary { list-style: none; gap: 6px; }
+.hintbox summary::-webkit-details-marker { display: none; }
+.hintbox summary::before { content: "▸"; display: inline-block; width: 1em; }
+.hintbox[open] summary::before { content: "▾"; }
+.tapcue { color: var(--accent); font-weight: 600; }
+.dy-svg .pickable:focus { outline: none; }
