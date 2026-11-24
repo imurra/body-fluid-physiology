@@ -315,7 +315,7 @@ function Reference({ onClose }: { onClose: () => void }) {
       <ul>
         <li>Calculated osmolality = 2 × Na⁺ + glucose/18 + BUN/2.8 (glucose and BUN in mg/dL). The laboratory also measures it directly.</li>
         <li>Na⁺ (with its anions) accounts for most of it, so Na⁺ usually tracks osmolality. Very high glucose is the exception: Na⁺ can be low while osmolality is high.</li>
-        <li>Urea crosses cell membranes, so it raises osmolality on both sides equally and does not move water. BUN is raised in cases 1 and 4.</li>
+        <li>Urea crosses cell membranes, so it raises osmolality on both sides equally and does not move water. BUN is raised in case 4.</li>
       </ul>
       <RefRanges />
 
@@ -417,7 +417,7 @@ export default function BedsideFlow() {
   const osmLab = Math.round(calcOsm);   // shown as the measured value
   const truthIcfDir = dirOf(truth.icf - BASE.icf, 0.1);
   // Cells start at their normal effective osmolality plus this patient's urea (urea crosses cell membranes).
-  const cellsStart = Math.round(BASE.icfEff / BASE.icf + labBun / 2.8);
+  const cellsStart = NORMAL;   // cells start at normal; water has not moved yet
   const scaleMax = 380;
 
   const reset = (i: number) => {
@@ -455,7 +455,6 @@ export default function BedsideFlow() {
   else if (step === 2) diag = <Diagram max={scaleMax} {...gradient} showOsm focus="height" lines={[osmLine, ...(osmGuess != null && osmGuess !== osmDir ? guessLine(osmGuess).map(l => ({ ...l, kind: 'wrong' as const })) : [])]} />;
   else if (step === 3 && !icfChecked)
     diag = <Diagram max={scaleMax} {...gradient} showOsm focus="membrane" ghost={{ kind: 'arrow', options: ICF_OPTS, chosen: icfGuess, onPick: pickIcf }} />;
-  else if (step === 3 && shift === 'before') diag = <Diagram max={scaleMax} {...gradient} showOsm focus="membrane" arrow={truthIcfDir} />;
   else if (step === 3) diag = <Diagram max={scaleMax} {...final} showOsm focus="membrane" arrow={truthIcfDir} />;
   else diag = <Diagram max={scaleMax} {...final} showOsm focus={step === 4 ? 'dim' : undefined} />;
 
@@ -563,7 +562,7 @@ export default function BedsideFlow() {
                 onPick={v => { setAff(v); record({ aff: v === c.dangerKey || (c.dangerAlso ?? []).includes(v) }); }} />
               {aff != null && <>
                 <Verdict ok={aff === c.dangerKey || (c.dangerAlso ?? []).includes(aff)}>{c.affectedNote}</Verdict>
-                <p className="hint">Circulation depends mainly on ECF volume (the amount of sodium); the brain depends on cell volume (the sodium concentration). The next steps check each one.</p>
+                <p className="hint">Circulation depends mainly on ECF volume (the amount of sodium); the brain depends on cell volume (osmolality, set mainly by the sodium concentration). The next steps check each one.</p>
                 <div className="row"><button className="primary" onClick={() => go(1)}>Next: ECF volume</button>{resetBtn(0)}</div>
               </>}
             </div>
@@ -600,11 +599,11 @@ export default function BedsideFlow() {
               </>}
               {osmChecked && <>
                 <Verdict ok={osmGuess === osmDir}>
-                  2 × {labNa} + {labGlu}/18 + {labBun}/2.8 = <b>{f0(calcOsm)} mOsm/kg</b>: {DIRWORD[osmDir]}. The measured value, now in the chart, matches.
+                  2 × {labNa} + {labGlu}/18 + {labBun}/2.8 = <b>{f0(calcOsm)} mOsm/kg</b>: {DIRWORD[osmDir]}. The measured serum osmolality, now in the chart, is also {osmLab}.
                   {labGlu > 300 && <> Na⁺ is low, but glucose adds {f0(labGlu / 18)} mOsm/kg, so osmolality is high.</>}
                   {labGlu <= 300 && labNa < 135 && <> The low Na⁺ is what lowers it.</>}
                 </Verdict>
-                <p className="hint">The ECF is now drawn at the serum osmolality ({osmLab}). The cells are still drawn at their starting value ({cellsStart}).{labBun > 20 && <> That is above 285 because urea (BUN {labBun}) crosses cell membranes and adds the same amount to both sides.</>}</p>
+                <p className="hint">The ECF is now drawn at the serum osmolality ({osmLab}). The cells are still at normal ({cellsStart}): water has not moved yet. That is the next step.</p>
                 <div className="row"><button className="primary" onClick={() => go(3)}>Next: cells</button>{resetBtn(2)}</div>
               </>}
             </div>
@@ -613,7 +612,7 @@ export default function BedsideFlow() {
           {step === 3 && (
             <div className="stepbox">
               <h3>4 · Cells</h3>
-              <p className="lead">Serum (ECF) osmolality is {osmLab}; the cells start at {cellsStart} mOsm/kg.</p>
+              <p className="lead">Serum (ECF) osmolality is {osmLab}; the cells are still at normal ({cellsStart}).</p>
               <p className="q">Which way does water move?</p>
               {!icfChecked && <>
                 <p className="hint tapcue">Tap an arrow on the diagram: into cells, no movement, or out of cells. Then Check.</p>
@@ -621,21 +620,9 @@ export default function BedsideFlow() {
                   onClick={() => { setIcfChecked(true); record({ icf: icfGuess === truthIcfDir }); showShift('after'); }}>Check</button>
               </>}
               {icfChecked && <>
-                <Verdict label="Water" ok={icfGuess === truthIcfDir}>{truthIcfDir === 0
-                  ? <>ECF and cells are both {osmLab}: no gradient. </>
-                  : <>The {truthIcfDir > 0 ? 'cells' : 'ECF'} ({truthIcfDir > 0 ? cellsStart : osmLab}) {truthIcfDir > 0 ? 'were' : 'was'} higher than the {truthIcfDir > 0 ? 'ECF' : 'cells'} ({truthIcfDir > 0 ? osmLab : cellsStart}), and water moves toward the higher osmolality. </>}{c.icfNote} ICF {f1(truth.icf)} L (normal 28).</Verdict>
+                <Verdict label="Water" ok={icfGuess === truthIcfDir}>{truthIcfDir !== 0 && <>Water moves toward the higher osmolality. </>}{c.icfNote} ICF {f1(truth.icf)} L (normal 28).</Verdict>
                 <p className="brain"><b>Brain:</b> {c.brainNote}</p>
-                <div className="shiftbox">
-                  <div className="choices" role="group" aria-label="Water movement">
-                    <button aria-pressed={shift === 'before'} onClick={() => showShift('before')}>1 · Before water moves</button>
-                    <button aria-pressed={shift === 'after'} onClick={() => showShift('after')}>2 · Water moves</button>
-                    <button className="linkbtn" onClick={playShift}>Replay</button>
-                  </div>
-                  <p className="hint">{shift === 'before'
-                    ? <>Serum {osmLab}, cells {cellsStart}.{truthIcfDir === 0 ? ' No gradient, so no water moves.' : ` Water moves ${truthIcfDir > 0 ? 'into' : 'out of'} the cells.`}</>
-                    : truthIcfDir === 0 ? <>Both sides stay at {osmLab}. ICF volume is unchanged.</>
-                      : <>Water moved until the cells matched the serum ({osmLab}). Cells {truthIcfDir > 0 ? 'swelled' : 'shrank'} to {f1(truth.icf)} L (dashed = normal, 28 L).</>}</p>
-                </div>
+                <p className="hint">{truthIcfDir === 0 ? 'No gradient, so no water moved.' : 'On the diagram, the dashed outline is the cells before water moved; the pink block is after.'}</p>
                 <div className="row"><button className="primary" onClick={() => go(4)}>Next: kidney</button>{resetBtn(3)}</div>
               </>}
             </div>
@@ -685,12 +672,11 @@ export default function BedsideFlow() {
                         // Read the final picture: what you see → what it means → what it affects.
                         const dE = truth.ecf - BASE.ecf, dI = truth.icf - BASE.icf;
                         const circ = c.dangerKey === 'circulation' || c.dangerKey === 'both';
-                        const brain = c.dangerKey === 'brain' || c.dangerKey === 'both';
                         const size = (d: number, more: string, less: string) => Math.abs(d) < 1.5 ? (Math.abs(d) < 0.1 ? 'the same as' : `close to`) : d > 0 ? more : less;
                         return <>
                           <span><b>Width:</b> ECF {size(dE, 'wider than', 'narrower than')} the dashed normal ({f1(truth.ecf)} L vs 14) → ECF volume {VOLWORD[c.volume]} → circulation {circ ? 'affected' : 'not affected'}.</span>
                           <span><b>Height:</b> {osmDir === 0 ? 'at' : osmDir > 0 ? 'above' : 'below'} the normal line ({osmLab} vs 290) → osmolality {DIRWORD[osmDir]} → {truthIcfDir > 0 ? 'water moved into the cells' : truthIcfDir < 0 ? 'water moved out of the cells' : 'no water moved'}.</span>
-                          <span><b>Cells:</b> {Math.abs(dI) < 0.1 ? 'the same size as' : `${Math.abs(dI) < 1.5 ? 'slightly ' : ''}${dI > 0 ? 'larger' : 'smaller'} than`} the dashed normal ({f1(truth.icf)} L vs 28) → ICF volume {truthIcfDir > 0 ? 'increased' : truthIcfDir < 0 ? 'decreased' : 'unchanged'} → brain {brain ? 'affected' : truthIcfDir !== 0 ? 'not affected (the change is small)' : 'not affected'}.</span>
+                          <span><b>ICF (cells):</b> {Math.abs(dI) < 0.1 ? 'the same size as' : `${Math.abs(dI) < 1.5 ? 'slightly ' : ''}${dI > 0 ? 'larger' : 'smaller'} than`} the dashed normal ({f1(truth.icf)} L vs 28) → ICF volume {truthIcfDir > 0 ? 'increased' : truthIcfDir < 0 ? 'decreased' : 'unchanged'} → brain {c.brainShort}.</span>
                         </>;
                       })()}</dd></div>
                       <div><dt>Affected</dt><dd>{c.debrief.affected}</dd></div>

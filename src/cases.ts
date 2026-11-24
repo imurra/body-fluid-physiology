@@ -30,6 +30,7 @@ export type Case = {
   tests?: string[];
   danger: { brain: string; circulation: string };   // mental status; vital signs
   affectedNote: string;                              // feedback for 'What is affected?'
+  brainShort: string;                                // brain status for the summary, from the mental status
   exam: string[];
   volume: Vol; volumeAlso?: Vol[]; volumeNote: string;
   events: Event[];
@@ -61,10 +62,11 @@ export const CASES: Case[] = [
     tests: ["Stool: watery, no blood"],
     danger: {"brain": "Alert and oriented.", "circulation": "HR 118, BP 96/60."},
     affectedNote: "Circulation: a heart rate of 118 with a BP of 96/60 means the circulation is affected. Brain: alert and oriented, so not affected.",
+    brainShort: "not affected (alert and oriented)",
     exam: ["Orthostatic: BP falls 22/12 mm Hg, HR rises 30/min", "Flat neck veins", "Dry mucous membranes", "No edema"],
     volume: "dry",
     volumeNote: "Orthostatic changes, flat neck veins and dry mucous membranes: ECF volume is decreased. The circulation is affected: less plasma volume means less venous return, so the heart rate rises to hold blood pressure.",
-    events: [iso(-2.5), { water: 0, urea: 120 }],
+    events: [iso(-2.5)],
     icfNote: "Serum osmolality is normal, so there is no gradient across the cell membrane. ICF volume is unchanged; the whole deficit is in the ECF.",
     brainNote: "Cell volume is unchanged, so brain function is unaffected: alert and oriented.",
     urine: { osm: 650, na: 10 },
@@ -75,7 +77,7 @@ export const CASES: Case[] = [
     kidneyRole: "homeostatic",
     roleNote: "Appropriate. Retaining salt and water is the right response to a decreased ECF volume. The losses are from the gut, not the kidney.",
     chain: ["Profuse watery diarrhea", "Salt and water are lost in isotonic proportion", ["ECF volume falls", "ECF osmolality is unchanged, so no water crosses the cell membrane"], "Lower plasma volume: tachycardia and orthostatic hypotension"],
-    debrief: {"who": "Young adult with acute diarrhea after travel.", "what": "Stool is roughly isotonic, so salt and water left the ECF together. Osmolality did not change, so no water moved into or out of cells.", "findings": "Orthostatic, flat neck veins, dry mucosa; Na⁺ 140, BUN 23, serum osmolality 293, raised Hct; urine osm 650, urine Na⁺ 10.", "affected": "Circulation: continued losses can progress to hypovolemic shock. Brain: unaffected."},
+    debrief: {"who": "Young adult with acute diarrhea after travel.", "what": "Stool is roughly isotonic, so salt and water left the ECF together. Osmolality did not change, so no water moved into or out of cells.", "findings": "Orthostatic, flat neck veins, dry mucosa; Na⁺ 140, serum osmolality 290, raised Hct; urine osm 650, urine Na⁺ 10.", "affected": "Circulation: continued losses can progress to hypovolemic shock. Brain: unaffected."},
     dangerKey: "circulation",
     needEcf: 'in', needCells: 'none', needNote: 'Fill the ECF; the cells are fine, so give fluid that does not change tonicity.',
     safety: 'Na⁺ is normal, so there is no sodium speed limit here. Reassess volume after each bolus and check K⁺ and HCO₃⁻, which diarrhea also depletes.',
@@ -96,6 +98,7 @@ export const CASES: Case[] = [
     tests: ["TSH and morning cortisol normal", "No diuretics or other drugs that cause hyponatremia"],
     danger: {"brain": "Mild nausea; alert, no confusion.", "circulation": "HR 78, BP 132/80."},
     affectedNote: "Brain: nausea is an early symptom of brain cells swelling (a moderately severe symptom in the hyponatremia guideline). Circulation: normal heart rate and BP, so not affected.",
+    brainShort: "mildly affected (nausea)",
     exam: ["No orthostatic change", "Normal neck veins", "Moist mucous membranes", "No edema"],
     volume: "euvolemic",
     volumeNote: "No orthostatic change, normal neck veins, moist mucosa, no edema: ECF volume is clinically normal, and the circulation is not affected. The ECF is in fact slightly expanded, but too little to detect at the bedside, because most of the retained water moves into cells (next steps).",
@@ -132,12 +135,13 @@ export const CASES: Case[] = [
     tests: ["Chest X-ray: pulmonary vascular congestion, small bilateral pleural effusions", "BNP 1,450 pg/mL (raised)"],
     danger: {"brain": "Alert, mildly fatigued.", "circulation": "BP 104/70, HR 102, RR 24, SpO₂ 90% on room air; cool hands."},
     affectedNote: "Circulation: tachycardia, a low-normal BP, cool hands and an SpO₂ of 90% mean the circulation is affected. Brain: alert, so not affected. The next step asks a different question: how much ECF there is.",
+    brainShort: "not affected (alert; Na⁺ 131 is mild)",
     exam: ["Raised JVP", "Crackles at both lung bases", "Pitting edema to the knees", "Weight up 5 kg in 2 weeks"],
     volume: "wet",
     volumeNote: "Raised JVP, edema, crackles and a 5 kg weight gain: ECF volume is increased. Edema, crackles and congestion on the chest X-ray show that much of the extra fluid is in the interstitium. The circulation is affected, but not by low volume: with an ejection fraction of 25% the ventricle cannot move the volume it has, so forward flow is poor (cool hands, low-normal BP) and the lungs are congested.",
     events: [fluid(5, 110)],
     icfNote: "More water than salt was retained, so ECF osmolality fell below the cells and water moved into them. ICF volume is mildly increased.",
-    brainNote: "Cells are mildly swollen, but the fall in osmolality is small: the patient is alert.",
+    brainNote: "Cells are mildly swollen, about as much as in case 2, but this patient has no neurological symptoms: Na⁺ 131 is mild hyponatremia, and the patient is alert.",
     urine: { osm: 450, na: 8 },
     water: "holding",
     salt: "holding",
@@ -167,6 +171,7 @@ export const CASES: Case[] = [
     tests: ["Serum ketones negative; arterial pH 7.36 (no ketoacidosis)"],
     danger: {"brain": "Drowsy, slow to answer.", "circulation": "HR 116, BP 94/58."},
     affectedNote: "Both. Circulation: a heart rate of 116 with a BP of 94/58. Brain: drowsy and slow to answer.",
+    brainShort: "affected (drowsy)",
     exam: ["Orthostatic: BP falls 20/10 mm Hg", "Flat neck veins", "Very dry mucous membranes", "Weight down 8 kg in a week"],
     volume: "dry",
     volumeNote: "Orthostatic changes, flat neck veins and very dry mucous membranes: ECF volume is decreased. The circulation is affected.",
