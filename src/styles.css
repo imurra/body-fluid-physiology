@@ -286,3 +286,4 @@ button.ghostbtn { background: transparent; cursor: pointer; font: inherit; font-
   .diagwrap.pinned .legend, .diagwrap.pinned .diagkey { display: none; }
 }
 html, body { overflow-anchor: none; }
+.ondiagram { display: flex; flex-direction: column; gap: 4px; }

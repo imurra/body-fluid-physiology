@@ -687,7 +687,18 @@ export default function BedsideFlow() {
                       <div><dt>Diagnosis</dt><dd>{c.dx}</dd></div>
                       <div><dt>What happened</dt><dd>{c.debrief.what}</dd></div>
                       <div><dt>Key findings</dt><dd>{c.debrief.findings}</dd></div>
-                      <div><dt>Compartments</dt><dd>ECF volume {VOLWORD[c.volume]}; osmolality {DIRWORD[osmDir]}; ICF volume {truthIcfDir > 0 ? 'increased' : truthIcfDir < 0 ? 'decreased' : 'unchanged'}.</dd></div>
+                      <div><dt>On the diagram</dt><dd className="ondiagram">{(() => {
+                        // Read the final picture: what you see → what it means → what it affects.
+                        const dE = truth.ecf - BASE.ecf, dI = truth.icf - BASE.icf;
+                        const circ = c.dangerKey === 'circulation' || c.dangerKey === 'both';
+                        const brain = c.dangerKey === 'brain' || c.dangerKey === 'both';
+                        const size = (d: number, more: string, less: string) => Math.abs(d) < 1.5 ? (Math.abs(d) < 0.1 ? 'the same as' : `close to`) : d > 0 ? more : less;
+                        return <>
+                          <span><b>Width:</b> ECF {size(dE, 'wider than', 'narrower than')} the dashed normal ({f1(truth.ecf)} L vs 14) → ECF volume {VOLWORD[c.volume]} → circulation {circ ? 'affected' : 'not affected'}.</span>
+                          <span><b>Height:</b> {osmDir === 0 ? 'at' : osmDir > 0 ? 'above' : 'below'} the normal line ({osmLab} vs 290) → osmolality {DIRWORD[osmDir]} → {truthIcfDir > 0 ? 'water moved into the cells' : truthIcfDir < 0 ? 'water moved out of the cells' : 'no water moved'}.</span>
+                          <span><b>Cells:</b> {Math.abs(dI) < 0.1 ? 'the same size as' : `${Math.abs(dI) < 1.5 ? 'slightly ' : ''}${dI > 0 ? 'larger' : 'smaller'} than`} the dashed normal ({f1(truth.icf)} L vs 28) → ICF volume {truthIcfDir > 0 ? 'increased' : truthIcfDir < 0 ? 'decreased' : 'unchanged'} → brain {brain ? 'affected' : truthIcfDir !== 0 ? 'not affected (the change is small)' : 'not affected'}.</span>
+                        </>;
+                      })()}</dd></div>
                       <div><dt>Affected</dt><dd>{c.debrief.affected}</dd></div>
                     </dl>
                     {LEARN[c.id] && <p className="hint">Learn more: <a href={LEARN[c.id].url} target="_blank" rel="noopener">{LEARN[c.id].text}</a> (MedlinePlus)</p>}
