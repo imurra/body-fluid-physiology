@@ -66,6 +66,20 @@ function Diagram({ ecf, icf, osm, ecfOsm, showOsm, lines = [], preEcf, arrow, ar
     className: 'pickable', role: 'button', tabIndex: 0, 'aria-label': o.label, onClick: () => pick(o.v),
     onKeyDown: (e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(o.v); } },
   } : {};
+  // Option labels are yellow pills: yellow means "tap here". The chosen one turns solid; the others fade.
+  const pill = (o: { v: any; label: string }, x: number, cy: number, anchor: 'start' | 'middle' | 'end') => {
+    const text = tag(o), w = text.length * 8.4 + 22, h = 26;
+    const raw = anchor === 'middle' ? x : anchor === 'start' ? x + w / 2 - 10 : x - w / 2 + 4;
+    const cx = Math.min(W - 4 - w / 2, Math.max(left + w / 2, raw));   // keep the pill inside the diagram
+    const chosen = o.v === ghost?.chosen, picking = !!ghost?.onPick;
+    const state = chosen ? ' chosen' : picking && ghost?.chosen != null ? ' faded' : '';
+    return (
+      <g className={`pill${state}${picking && ghost?.chosen == null ? ' pulse' : ''}`}>
+        <rect x={cx - w / 2} y={cy - h / 2} width={w} height={h} rx={h / 2} />
+        <text x={cx} y={cy + 5} textAnchor="middle">{text}</text>
+      </g>
+    );
+  };
   const byY = ghost?.kind === 'height' ? [...ghost.options].sort((a, b) => b.at - a.at) : [];
 
   return (
@@ -119,7 +133,7 @@ function Diagram({ ecf, icf, osm, ecfOsm, showOsm, lines = [], preEcf, arrow, ar
             <g key={String(o.v)} {...tapProps(o)}>
               {ghost.onPick && <rect x={x0} y={top - 8} width={x1 - x0} height={bottom - top + 8} className="hit" />}
               <rect x={mem} y={ecfY} width={o.at * PX} height={bottom - ecfY} className={cls(o)} />
-              <text x={lx} y={ecfY + 22 + (ghost.onPick && k === 1 ? 22 : 0)} textAnchor={ghost.onPick ? 'middle' : 'end'} className={`ghostlab${o.v === ghost.chosen ? ' chosen' : ''}`}>{tag(o)}</text>
+              {pill(o, lx, ecfY + 24 + (ghost.onPick && k === 1 ? 30 : 0), ghost.onPick ? 'middle' : 'end')}
             </g>
           );
         });
@@ -131,7 +145,7 @@ function Diagram({ ecf, icf, osm, ecfOsm, showOsm, lines = [], preEcf, arrow, ar
           <g key={String(o.v)} {...tapProps(o)}>
             {ghost.onPick && (() => { const t0 = k === 0 ? top - 8 : (yy + up) / 2, b0 = k === byY.length - 1 ? bottom : (yy + dn) / 2; return <rect x={mem} y={t0} width={W - 12 - mem} height={b0 - t0} className="hit" />; })()}
             <line x1={mem} x2={mem + ecfW} y1={yy} y2={yy} className={cls(o)} />
-            <text x={mem + ecfW + 34} y={yy + 4} className={`ghostlab${o.v === ghost.chosen ? ' chosen' : ''}`}>{tag(o)}</text>
+            {pill(o, mem + ecfW + 34, yy, 'start')}
           </g>
         );
       })}
@@ -141,7 +155,7 @@ function Diagram({ ecf, icf, osm, ecfOsm, showOsm, lines = [], preEcf, arrow, ar
           <g key={String(o.v)} {...tapProps(o)}>
             {ghost.onPick && <rect x={left} y={yy - 20} width={W - 12 - left} height={40} className="hit" />}
             {o.at !== 0 && <line x1={mem + o.at * 56} x2={mem - o.at * 56} y1={yy} y2={yy} className={cls(o)} markerEnd="url(#fh)" />}
-            <text x={mem + (o.at === 0 ? 0 : 64)} y={yy + 4} textAnchor={o.at === 0 ? 'middle' : 'start'} className={`ghostlab${o.v === ghost.chosen ? ' chosen' : ''}`}>{tag(o)}</text>
+            {pill(o, mem + (o.at === 0 ? 0 : 64), yy, o.at === 0 ? 'middle' : 'start')}
           </g>
         );
       })}
@@ -369,6 +383,22 @@ export default function BedsideFlow() {
   const [showRef, setShowRef] = useState(false);
   const [shift, setShift] = useState<'before' | 'after'>('after');   // cells step: before or after water moves
   const timer = useRef<number>();
+  // On narrow screens the diagram is pinned at the top; once it is pinned, it shrinks and hides its keys.
+  const diagRef = useRef<HTMLDivElement>(null);
+  const [pinned, setPinned] = useState(false);
+  useEffect(() => {
+    const onScroll = () => {
+      const el = diagRef.current;
+      if (!el || window.innerWidth > 820) { setPinned(false); return; }
+      const y = window.scrollY, atTop = el.getBoundingClientRect().top <= 1;
+      // Hysteresis: pin past 120 px, unpin only near the top, so the size change cannot make it flicker.
+      setPinned(prev => (prev ? y > 20 : atTop && y > 120));
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => { window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); };
+  }, []);
   const playShift = () => {
     window.clearTimeout(timer.current);
     setShift('before');
@@ -678,7 +708,7 @@ export default function BedsideFlow() {
 
         <section className="figure" aria-label="Fluid compartment diagram">
           {flash > 0 && <div key={flash} className="flash" aria-hidden="true" />}
-          <div className="diagwrap">
+          <div className={`diagwrap${pinned ? ' pinned' : ''}`} ref={diagRef}>
             {maxStep >= 2 && <div className="minilabs mono" aria-hidden="true">
               <span>Na⁺ {labNa}</span><span>Glu {labGlu}</span><span>BUN {labBun}</span>
               {(osmChecked || maxStep > 2) && <span>Osm {osmLab}</span>}

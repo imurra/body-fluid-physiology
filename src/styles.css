@@ -267,3 +267,22 @@ button.ghostbtn { background: transparent; cursor: pointer; font: inherit; font-
 .hintbox[open] summary::before { content: "▾"; }
 .tapcue { color: var(--accent); font-weight: 600; }
 .dy-svg .pickable:focus { outline: none; }
+
+/* Tap targets: yellow means "tap here" (Nov 2026) */
+:root { --tap: #ffd84d; --tap-line: #9a7400; --tap-ink: #1d1a10; --tap-soft: #fff3b0; }
+.dy-svg .pill rect { fill: var(--tap); stroke: var(--tap-line); stroke-width: 1.5; }
+.dy-svg .pill text { fill: var(--tap-ink); font-family: var(--font-body); font-size: 14px; font-weight: 700; }
+.dy-svg .pill.chosen rect { fill: var(--accent); stroke: var(--accent); }
+.dy-svg .pill.chosen text { fill: var(--accent-ink); }
+.dy-svg .pill.faded { opacity: .45; }
+.dy-svg .pill.pulse { transform-box: fill-box; transform-origin: center; animation: pillpulse .9s ease-in-out 2; }
+@keyframes pillpulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.14); } }
+@media (prefers-reduced-motion: reduce) { .dy-svg .pill.pulse { animation: none; } }
+.tapcue { color: var(--tap-ink); background: var(--tap-soft); box-shadow: inset 3px 0 0 var(--tap-line); padding: 6px 10px; border-radius: 6px; font-weight: 700; }
+
+/* Pinned diagram on narrow screens: smaller, keys hidden */
+@media (max-width: 820px) {
+  .diagwrap.pinned .dy-svg { height: 30vh; width: 100%; }
+  .diagwrap.pinned .legend, .diagwrap.pinned .diagkey { display: none; }
+}
+html, body { overflow-anchor: none; }
