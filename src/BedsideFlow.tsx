@@ -612,9 +612,7 @@ export default function BedsideFlow() {
               </>}
               {osmChecked && <>
                 <Verdict ok={osmGuess === osmDir}>
-                  2 × {labNa} + {labGlu}/18 + {labBun}/2.8 = <b>{f0(calcOsm)} mOsm/kg</b>: {DIRWORD[osmDir]}. The measured serum osmolality, now in the chart, is also {osmLab}.
-                  {labGlu > 300 && <> Na⁺ is low, but glucose adds {f0(labGlu / 18)} mOsm/kg, so osmolality is high.</>}
-                  {labGlu <= 300 && labNa < 135 && <> The low Na⁺ is what lowers it.</>}
+                  Calculated serum osmolality is 2 × {labNa} + {labGlu}/18 + {labBun}/2.8 = <b>{f0(calcOsm)} mOsm/kg</b>, {osmDir === 0 ? 'within' : osmDir < 0 ? 'below' : 'above'} the normal range ({OSM_LO}–{OSM_HI}). The measured value, now in the chart, agrees. {c.osmNote}
                 </Verdict>
                 <p className="hint">The ECF is now drawn at the serum osmolality ({osmLab}). The cells are still at normal ({cellsStart}): water has not moved yet. That is the next step.</p>
                 <div className="row"><button className="primary" onClick={() => go(3)}>Next: cells</button>{resetBtn(2)}</div>

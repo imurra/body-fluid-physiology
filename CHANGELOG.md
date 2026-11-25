@@ -1,6 +1,6 @@
 # Change log
 
-One row per discrete change, so changes can be counted by category and source.
+One row per discrete change, so changes can be counted by category and source. A row tagged `[n texts]` applies one change to n places (e.g., the same rewrite across cases).
 Add a row with every commit that changes the app (`src/` or `index.html`).
 
 **Categories** (same as the abstract): `diagram-interaction`, `framing-scope`, `error-correction`, `simplification`.
@@ -37,3 +37,10 @@ Count with: `python3 tools/count_changes.py`
 | 2026-11-24 | 7a709cd | ECF volume tap labels: reference volumes removed | simplification | user-testing | Students judge ECF volume from the exam, not by calculating it |
 | 2026-11-24 | 7a709cd | Diagram key: "Width = volume in the compartments · Height = osmolality · Water moves until the heights match"; legend "ECF (interstitial and vascular)" | framing-scope | user-testing | Key describes the diagram, not clinical inferences |
 | 2026-11-24 | 7a709cd | "The ECF (green) appears once you assess its volume in step 2" moved into the figure (replaces "ECF: judged in step 2"); removed from below the figure | diagram-interaction | user-testing | Explain the empty ECF where the learner is looking |
+| 2026-11-24 | PENDING | Step 1 feedback rewritten, all 4 cases (findings, then inference; no 'Circulation:/Brain:' labels) [4 texts] | framing-scope | user-testing | Feedback read as unclear and robotic; reasoning style from author's case 1 rewrites |
+| 2026-11-24 | PENDING | Step 2 ECF volume feedback rewritten, cases 2–4 (supporting and opposing findings; HF pattern named) [3 texts] | framing-scope | user-testing | Feedback read as unclear and robotic; reasoning style from author's case 1 rewrites |
+| 2026-11-24 | PENDING | Step 3 feedback: one sentence form for all cases plus a case-specific line (new osmNote field) [4 texts] | framing-scope | user-testing | Feedback read as unclear and robotic; reasoning style from author's case 1 rewrites |
+| 2026-11-24 | PENDING | Step 4 feedback rewritten, cases 2–4 (tonicity, net water shift, pattern named) [3 texts] | framing-scope | user-testing | Feedback read as unclear and robotic; reasoning style from author's case 1 rewrites |
+| 2026-11-24 | PENDING | Step 4 brain line rewritten, all 4 cases [4 texts] | framing-scope | user-testing | Feedback read as unclear and robotic; reasoning style from author's case 1 rewrites |
+| 2026-11-24 | PENDING | Step 5 water, sodium and response feedback rewritten, all 4 cases [12 texts] | framing-scope | user-testing | Feedback read as unclear and robotic; reasoning style from author's case 1 rewrites |
+| 2026-11-24 | PENDING | Case summaries: salt → sodium, 3 cases [3 texts] | framing-scope | user-testing | Feedback read as unclear and robotic; reasoning style from author's case 1 rewrites |
