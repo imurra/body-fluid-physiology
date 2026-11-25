@@ -188,7 +188,7 @@ function Diagram({ ecf, icf, osm, ecfOsm, showOsm, lines = [], preEcf, arrow, ar
       </g>}
       {arrow === 0 && <text x={mem} y={ay} textAnchor="middle" className="arrowtext">{word}no water movement</text>}
 
-      <text x={mem - (icf * PX) / 2} y={bottom - 14} textAnchor="middle" className="lab icf-t">ICF</text>
+      <text x={mem - (icf * PX) / 2} y={bottom - 14} textAnchor="middle" className="lab icf-t">ICF (cells)</text>
       {ecf != null && <text x={mem + (ecf * PX) / 2} y={bottom - 14} textAnchor="middle" className="lab ecf-t">ECF</text>}
       {ecf == null && !ghost && <text x={mem + 12} y={(top + bottom) / 2 + 30} className="tick">ECF: judged in step 2</text>}
 
@@ -555,6 +555,10 @@ export default function BedsideFlow() {
             </dd></div>}
           </dl>
 
+          <div className="stepbar" role="progressbar" aria-label="Progress in this case" aria-valuemin={1} aria-valuemax={STEPS.length} aria-valuenow={step + 1}>
+            <span className="stepbar-label">Case {ci + 1} of {CASES.length} · Step {step + 1} of {STEPS.length}</span>
+            <div className="stepbar-track">{STEPS.map((s, i) => <i key={s} className={i < step || (i === step && maxStep > step) ? 'full' : i === step ? 'here' : i <= maxStep ? 'full' : ''} />)}</div>
+          </div>
           <div className="stepnav">
             {step > 0 && <button className="linkbtn" onClick={() => setStep(step - 1)}>← Back</button>}
             <span className="spacer" />
@@ -565,10 +569,9 @@ export default function BedsideFlow() {
           {step === 0 && (
             <div className="stepbox">
               <h3>1 · What is affected?</h3>
-              <p className="lead">Use the vital signs and mental status above.</p>
-              <p className="q">Which is affected?</p>
+              <p className="q">Based on the vital signs and mental status, which is currently affected?</p>
               <Choice label="What is affected" value={aff} disabled={aff != null}
-                options={[{ v: 'circulation' as Danger, text: 'Circulation' }, { v: 'brain' as Danger, text: 'Brain' }, { v: 'both' as Danger, text: 'Both' }, { v: 'neither' as Danger, text: 'Neither' }]}
+                options={[{ v: 'circulation' as Danger, text: 'Circulation only' }, { v: 'brain' as Danger, text: 'Brain only' }, { v: 'both' as Danger, text: 'Both' }, { v: 'neither' as Danger, text: 'Neither' }]}
                 onPick={v => { setAff(v); record({ aff: v === c.dangerKey || (c.dangerAlso ?? []).includes(v) }); }} />
               {aff != null && <>
                 <Verdict ok={aff === c.dangerKey || (c.dangerAlso ?? []).includes(aff)}>{c.affectedNote}</Verdict>
@@ -580,10 +583,10 @@ export default function BedsideFlow() {
 
           {step === 1 && (
             <div className="stepbox">
-              <h3>2 · ECF volume</h3>
-              <p className="lead">Use the exam: neck veins, mucous membranes, edema, weight, orthostatic change.</p>
-              <p className="q">ECF volume is:</p>
-              {vol == null && <p className="hint tapcue">Tap an outline on the diagram: decreased, normal or increased.</p>}
+              <h3>2 · Assess ECF volume</h3>
+              <p className="lead">Use the orthostatic vital signs and exam: neck veins, mucous membranes, edema{c.exam.some(e => /weight/i.test(e)) ? ', weight change' : ''}.</p>
+              <p className="q">What is the ECF volume?</p>
+              {vol == null && <p className="hint tapcue">Tap a yellow label on the diagram: decreased, normal or increased.</p>}
               {vol != null && <>
                 <Verdict ok={volOk}>{c.volumeNote}</Verdict>
                 <p className="hint">The diagram now shows this patient’s ECF volume, {f1(truth.ecf)} L (dashed = normal, 14 L). Its height, the osmolality, comes next.</p>
@@ -603,7 +606,7 @@ export default function BedsideFlow() {
               </details>
               <p className="q">Serum osmolality is:</p>
               {!osmChecked && <>
-                <p className="hint tapcue">Tap a line on the diagram: low, normal or high. Then Check.</p>
+                <p className="hint tapcue">Tap a yellow label on the diagram: low, normal or high. Then Check.</p>
                 <button className="primary" disabled={osmGuess == null}
                   onClick={() => { setOsmChecked(true); record({ osm: osmGuess === osmDir }); }}>Check</button>
               </>}
@@ -625,7 +628,7 @@ export default function BedsideFlow() {
               <p className="lead">Serum (ECF) osmolality is {osmLab}; the cells are still at normal ({cellsStart}).</p>
               <p className="q">Which way does water move?</p>
               {!icfChecked && <>
-                <p className="hint tapcue">Tap an arrow on the diagram: into cells, no movement, or out of cells. Then Check.</p>
+                <p className="hint tapcue">Tap a yellow label on the diagram: water into cells, no movement, or water out of cells. Then Check.</p>
                 <button className="primary" disabled={icfGuess == null}
                   onClick={() => { setIcfChecked(true); record({ icf: icfGuess === truthIcfDir }); showShift('after'); }}>Check</button>
               </>}
@@ -718,9 +721,10 @@ export default function BedsideFlow() {
             {diag}
             <div className="legend">
               <span><i className="sw icf" />ICF (cells)</span>
-              <span><i className="sw ecf" />ECF</span>
+              <span><i className="sw ecf" />ECF (interstitial and vascular; circulation)</span>
               <span><i className="sw normal" />normal</span>
             </div>
+            <p className="diagnote">The diagram updates with each step.{vol == null ? ' The ECF (green) appears once you assess its volume in step 2.' : ''}</p>
             <p className="diagkey">Width = volume (circulation) · Height = osmolality (cells, brain) · Water moves until the heights match</p>
           </div>
         </section>

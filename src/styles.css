@@ -287,3 +287,17 @@ button.ghostbtn { background: transparent; cursor: pointer; font: inherit; font-
 }
 html, body { overflow-anchor: none; }
 .ondiagram { display: flex; flex-direction: column; gap: 4px; }
+
+/* Nov 24: clickable-looking tap labels, per-case step bar, diagram note */
+.dy-svg .pill rect { stroke-width: 2; filter: drop-shadow(0 2px 1.5px rgba(0,0,0,.28)); }
+.dy-svg .pill:not(.chosen):not(.faded) text { text-decoration: underline; text-underline-offset: 2px; }
+.dy-svg .hit { cursor: pointer; }
+.dy-svg g:hover > .pill:not(.chosen):not(.faded) rect, .dy-svg g:focus-visible > .pill rect { filter: drop-shadow(0 3px 3px rgba(0,0,0,.35)); stroke: var(--tap-ink); }
+.stepbar { margin: 4px 0 10px; }
+.stepbar-label { display: block; font-size: 12px; font-weight: 600; color: var(--muted, #666); margin-bottom: 4px; letter-spacing: .02em; }
+.stepbar-track { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.stepbar-track i { display: block; height: 6px; border-radius: 3px; background: #dfe3ea; }
+.stepbar-track i.full { background: var(--accent); }
+.stepbar-track i.here { background: var(--accent); opacity: .5; }
+.diagnote { font-size: 13px; font-weight: 600; margin: 6px 0 2px; color: var(--ink, #222); }
+.diagwrap.pinned .diagnote { display: none; }

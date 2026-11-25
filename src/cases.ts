@@ -57,7 +57,7 @@ export const CASES: Case[] = [
   {
     id: 'diarrhea',
     title: "Acute watery diarrhea",
-    story: "34-year-old with 3 days of profuse watery diarrhea after travel. Light-headed when standing.",
+    story: "A 34-year-old has had 3 days of profuse watery diarrhea after travel and becomes light-headed when standing.",
     dx: "Acute infectious diarrhea.",
     tests: ["Stool: watery, no blood"],
     danger: {"brain": "Alert and oriented.", "circulation": "HR 118, BP 96/60."},
