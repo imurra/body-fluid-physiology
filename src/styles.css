@@ -301,3 +301,4 @@ html, body { overflow-anchor: none; }
 .stepbar-track i.here { background: var(--accent); opacity: .5; }
 .diagnote { font-size: 13px; font-weight: 600; margin: 6px 0 2px; color: var(--ink, #222); }
 .diagwrap.pinned .diagnote { display: none; }
+.dy-svg .pill text .pillval { font-weight: 500; font-size: 12.5px; text-decoration: none; }

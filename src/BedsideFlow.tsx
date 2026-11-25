@@ -45,7 +45,7 @@ type DiagramProps = {
 };
 type Focus = 'labels' | 'width' | 'height' | 'membrane' | 'dim';
 // Answer options drawn on the diagram. width: ECF litres; height: osmolality; arrow: 1 in, 0 none, -1 out.
-type Ghost = { kind: 'width' | 'height' | 'arrow'; options: { v: any; label: string; at: number }[]; chosen?: any; onPick?: (v: any) => void };
+type Ghost = { kind: 'width' | 'height' | 'arrow'; options: { v: any; label: string; val?: string; at: number }[]; chosen?: any; onPick?: (v: any) => void };
 
 function Diagram({ ecf, icf, osm, ecfOsm, showOsm, lines = [], preEcf, arrow, arrowGuess, max = 380, focus, ghost }: DiagramProps) {
   const W = 600, H = 320, PX = 9, left = 52, mem = left + 36 * PX, top = 24, bottom = 262, MAX = max;
@@ -67,16 +67,16 @@ function Diagram({ ecf, icf, osm, ecfOsm, showOsm, lines = [], preEcf, arrow, ar
     onKeyDown: (e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(o.v); } },
   } : {};
   // Option labels are yellow pills: yellow means "tap here". The chosen one turns solid; the others fade.
-  const pill = (o: { v: any; label: string }, x: number, cy: number, anchor: 'start' | 'middle' | 'end') => {
-    const text = tag(o), w = text.length * 8.4 + 22, h = 26;
+  const pill = (o: { v: any; label: string; val?: string }, x: number, cy: number, anchor: 'start' | 'middle' | 'end', minX = left) => {
+    const text = tag(o), val = o.val ? ` ${o.val}` : '', w = text.length * 8.4 + val.length * 7.2 + 22, h = 26;
     const raw = anchor === 'middle' ? x : anchor === 'start' ? x + w / 2 - 10 : x - w / 2 + 4;
-    const cx = Math.min(W - 4 - w / 2, Math.max(left + w / 2, raw));   // keep the pill inside the diagram
+    const cx = Math.min(W - 4 - w / 2, Math.max(minX + w / 2, raw));   // keep the pill inside the diagram
     const chosen = o.v === ghost?.chosen, picking = !!ghost?.onPick;
     const state = chosen ? ' chosen' : picking && ghost?.chosen != null ? ' faded' : '';
     return (
       <g className={`pill${state}${picking && ghost?.chosen == null ? ' pulse' : ''}`}>
         <rect x={cx - w / 2} y={cy - h / 2} width={w} height={h} rx={h / 2} />
-        <text x={cx} y={cy + 5} textAnchor="middle">{text}</text>
+        <text x={cx} y={cy + 5} textAnchor="middle">{text}{val && <tspan className="pillval">{val}</tspan>}</text>
       </g>
     );
   };
@@ -133,7 +133,7 @@ function Diagram({ ecf, icf, osm, ecfOsm, showOsm, lines = [], preEcf, arrow, ar
             <g key={String(o.v)} {...tapProps(o)}>
               {ghost.onPick && <rect x={x0} y={top - 8} width={x1 - x0} height={bottom - top + 8} className="hit" />}
               <rect x={mem} y={ecfY} width={o.at * PX} height={bottom - ecfY} className={cls(o)} />
-              {pill(o, lx, ecfY + 24 + (ghost.onPick && k === 1 ? 30 : 0), ghost.onPick ? 'middle' : 'end')}
+              {pill(o, lx, ecfY + 24 + (ghost.onPick ? k * 30 : 0), ghost.onPick ? 'middle' : 'end', ghost.onPick ? mem + 6 : left)}
             </g>
           );
         });
@@ -145,7 +145,7 @@ function Diagram({ ecf, icf, osm, ecfOsm, showOsm, lines = [], preEcf, arrow, ar
           <g key={String(o.v)} {...tapProps(o)}>
             {ghost.onPick && (() => { const t0 = k === 0 ? top - 8 : (yy + up) / 2, b0 = k === byY.length - 1 ? bottom : (yy + dn) / 2; return <rect x={mem} y={t0} width={W - 12 - mem} height={b0 - t0} className="hit" />; })()}
             <line x1={mem} x2={mem + ecfW} y1={yy} y2={yy} className={cls(o)} />
-            {pill(o, mem + ecfW + 34, yy, 'start')}
+            {pill(o, mem + ecfW + 10, yy, 'start')}
           </g>
         );
       })}
@@ -169,7 +169,7 @@ function Diagram({ ecf, icf, osm, ecfOsm, showOsm, lines = [], preEcf, arrow, ar
         <text x={mem + ecfW + 8} y={top + 14} className="focuslab">width = volume</text>
       </>}
       {focus === 'height' && <>
-        <line x1={mem + ecfW + 14} x2={mem + ecfW + 14} y1={bottom - 3} y2={ecfY + 3} className="focusmark" markerStart="url(#fh)" markerEnd="url(#fh)" />
+        <line x1={mem + ecfW - 14} x2={mem + ecfW - 14} y1={bottom - 3} y2={ecfY + 3} className="focusmark" markerStart="url(#fh)" markerEnd="url(#fh)" />
         <text x={left + 8} y={top + 14} className="focuslab">height = osmolality</text>
       </>}
 
@@ -452,8 +452,8 @@ export default function BedsideFlow() {
   const pickVol = (v: Vol) => { if (vol != null) return; setVol(v); setFlash(f => f + 1); record({ vol: v === c.volume || (c.volumeAlso ?? []).includes(v) }); };
   const pickOsm = (v: Snap) => { if (osmChecked) return; setOsmGuess(v); setFlash(f => f + 1); };
   const pickIcf = (v: Snap) => { if (icfChecked) return; setIcfGuess(v); setFlash(f => f + 1); };
-  const VOL_OPTS = [{ v: 'dry' as Vol, label: 'decreased', at: 8 }, { v: 'euvolemic' as Vol, label: 'normal', at: BASE.ecf }, { v: 'wet' as Vol, label: 'increased', at: 20 }];
-  const OSM_OPTS = [{ v: -1 as Snap, label: 'low', at: OSM_SNAPS[-1] }, { v: 0 as Snap, label: 'normal', at: OSM_SNAPS[0] }, { v: 1 as Snap, label: 'high', at: OSM_SNAPS[1] }];
+  const VOL_OPTS = [{ v: 'dry' as Vol, label: 'decreased', val: '< 14 L', at: 8 }, { v: 'euvolemic' as Vol, label: 'normal', val: '14 L', at: BASE.ecf }, { v: 'wet' as Vol, label: 'increased', val: '> 14 L', at: 20 }];
+  const OSM_OPTS = [{ v: -1 as Snap, label: 'low', val: `< ${OSM_LO}`, at: OSM_SNAPS[-1] }, { v: 0 as Snap, label: 'normal', val: `${OSM_LO}–${OSM_HI}`, at: OSM_SNAPS[0] }, { v: 1 as Snap, label: 'high', val: `> ${OSM_HI}`, at: OSM_SNAPS[1] }];
   const ICF_OPTS = [{ v: 1 as Snap, label: 'water into cells', at: 1 }, { v: 0 as Snap, label: 'no movement', at: 0 }, { v: -1 as Snap, label: 'water out of cells', at: -1 }];
   let diag: React.ReactNode;
   if (step === 0) diag = <Diagram max={scaleMax} ecf={null} icf={BASE.icf} osm={cellsStart} focus="labels" />;
@@ -597,8 +597,8 @@ export default function BedsideFlow() {
 
           {step === 2 && (
             <div className="stepbox">
-              <h3>3 · Serum osmolality</h3>
-              <p className="lead">Na⁺ and glucose are the main ECF solutes. Calculate serum osmolality from the serum results above:</p>
+              <h3>3 · Calculate serum osmolality</h3>
+              <p className="lead">Na⁺ and glucose are the main ECF solutes. Calculate serum osmolality from the highlighted serum results above:</p>
               <p className="formula mono">2 × Na⁺ + glucose/18 + BUN/2.8</p>
               <details className="hintbox">
                 <summary>Show reference values</summary>
