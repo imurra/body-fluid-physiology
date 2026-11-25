@@ -190,7 +190,7 @@ function Diagram({ ecf, icf, osm, ecfOsm, showOsm, lines = [], preEcf, arrow, ar
 
       <text x={mem - (icf * PX) / 2} y={bottom - 14} textAnchor="middle" className="lab icf-t">ICF (cells)</text>
       {ecf != null && <text x={mem + (ecf * PX) / 2} y={bottom - 14} textAnchor="middle" className="lab ecf-t">ECF</text>}
-      {ecf == null && !ghost && <text x={mem + 12} y={(top + bottom) / 2 + 30} className="tick">ECF: judged in step 2</text>}
+      {ecf == null && !ghost && <text x={mem + 12} y={(top + bottom) / 2 + 10} className="tick halo"><tspan x={mem + 12}>The ECF (green) appears</tspan><tspan x={mem + 12} dy="16">once you assess its</tspan><tspan x={mem + 12} dy="16">volume in step 2.</tspan></text>}
 
       <line x1={left} x2={W - 12} y1={bottom} y2={bottom} className="axis" />
       {[30, 20, 10].map(v => <text key={`i${v}`} x={mem - v * PX} y={bottom + 16} textAnchor="middle" className="tick">{v}</text>)}
@@ -452,7 +452,7 @@ export default function BedsideFlow() {
   const pickVol = (v: Vol) => { if (vol != null) return; setVol(v); setFlash(f => f + 1); record({ vol: v === c.volume || (c.volumeAlso ?? []).includes(v) }); };
   const pickOsm = (v: Snap) => { if (osmChecked) return; setOsmGuess(v); setFlash(f => f + 1); };
   const pickIcf = (v: Snap) => { if (icfChecked) return; setIcfGuess(v); setFlash(f => f + 1); };
-  const VOL_OPTS = [{ v: 'dry' as Vol, label: 'decreased', val: '< 14 L', at: 8 }, { v: 'euvolemic' as Vol, label: 'normal', val: '14 L', at: BASE.ecf }, { v: 'wet' as Vol, label: 'increased', val: '> 14 L', at: 20 }];
+  const VOL_OPTS = [{ v: 'dry' as Vol, label: 'decreased', at: 8 }, { v: 'euvolemic' as Vol, label: 'normal', at: BASE.ecf }, { v: 'wet' as Vol, label: 'increased', at: 20 }];
   const OSM_OPTS = [{ v: -1 as Snap, label: 'low', val: `< ${OSM_LO}`, at: OSM_SNAPS[-1] }, { v: 0 as Snap, label: 'normal', val: `${OSM_LO}–${OSM_HI}`, at: OSM_SNAPS[0] }, { v: 1 as Snap, label: 'high', val: `> ${OSM_HI}`, at: OSM_SNAPS[1] }];
   const ICF_OPTS = [{ v: 1 as Snap, label: 'water into cells', at: 1 }, { v: 0 as Snap, label: 'no net water shift', at: 0 }, { v: -1 as Snap, label: 'water out of cells', at: -1 }];
   let diag: React.ReactNode;
@@ -721,11 +721,11 @@ export default function BedsideFlow() {
             {diag}
             <div className="legend">
               <span><i className="sw icf" />ICF (cells)</span>
-              <span><i className="sw ecf" />ECF (interstitial and vascular; circulation)</span>
+              <span><i className="sw ecf" />ECF (interstitial and vascular)</span>
               <span><i className="sw normal" />normal</span>
             </div>
-            <p className="diagnote">The diagram updates with each step.{vol == null ? ' The ECF (green) appears once you assess its volume in step 2.' : ''}</p>
-            <p className="diagkey">Width = volume (circulation) · Height = osmolality (cells, brain) · Water moves until the heights match</p>
+            <p className="diagnote">The diagram updates with each step.</p>
+            <p className="diagkey">Width = volume in the compartments · Height = osmolality · Water moves until the heights match</p>
           </div>
         </section>
       </div>
