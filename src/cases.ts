@@ -65,7 +65,7 @@ export const CASES: Case[] = [
     brainShort: "not affected (alert and oriented)",
     exam: ["Orthostatic: BP falls 22/12 mm Hg, HR rises 30/min", "Flat neck veins", "Dry mucous membranes", "No edema"],
     volume: "dry",
-    volumeNote: "Orthostatic changes, flat neck veins and dry mucous membranes: ECF volume is decreased. The circulation is affected: less plasma volume means less venous return, so the heart rate rises to hold blood pressure.",
+    volumeNote: "The orthostatic fall in blood pressure with a compensatory rise in heart rate, flat neck veins and dry mucous membranes support ECF volume depletion. The absence of edema argues against increased ECF volume.",
     events: [iso(-2.5)],
     icfNote: "Serum osmolality is normal, so there is no gradient across the cell membrane. ICF volume is unchanged; the whole deficit is in the ECF.",
     brainNote: "Cell volume is unchanged, so brain function is unaffected: alert and oriented.",
