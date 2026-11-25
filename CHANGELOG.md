@@ -6,7 +6,7 @@ Add a row with every commit that changes the app (`src/` or `index.html`).
 **Categories** (same as the abstract): `diagram-interaction`, `framing-scope`, `error-correction`, `simplification`.
 **Sources:** `development` (author + AI while building), `faculty-review` (the 9-faculty survey round), `accuracy-review` (structured AI review), `author` (author's own revision), `clinician-review` (detailed feedback from a tenth clinician, a medical educator, after the survey round).
 
-**Baseline:** the abstract's 81 changes (development 40; review round 41) were counted separately, before this log existed. Record the commit that count ended at: `________`. Rows below start after it.
+**Baseline:** the abstract's 81 changes (development 40; review round 41) were counted separately, before this log existed. The count ended at commit `87c2a4c` (2026-11-23), before the tenth clinician-educator's review. Rows below start after it; running total = 81 + rows.
 
 Count with: `python3 tools/count_changes.py`
 
