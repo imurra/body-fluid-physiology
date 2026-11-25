@@ -24,6 +24,6 @@ Count with: `python3 tools/count_changes.py`
 | 2026-11-24 | e3ed73f | Yellow tap labels styled as buttons (shadow, underline, pointer); cue "Tap a yellow label" | diagram-interaction | user-testing | Tap targets did not look clickable |
 | 2026-11-24 | e3ed73f | Per-case progress bar: "Case n of 4 · Step n of 6" | diagram-interaction | user-testing | Show progress within each case |
 | 2026-11-24 | 029c9a0 | Case 1 step 2 feedback rewritten (orthostatic fall with compensatory HR rise, flat neck veins, dry mucosa; no edema argues against increased ECF) | framing-scope | user-testing | Feedback read as robotic |
-| 2026-11-24 | PENDING | Step 3 heading "Calculate serum osmolality"; lead points to the highlighted serum results | framing-scope | user-testing | Name the task; direct attention to the labs used |
-| 2026-11-24 | PENDING | Tap labels show reference values (osmolality < 275 / 275–295 / > 295; ECF < 14 L / 14 L / > 14 L) | diagram-interaction | user-testing | Link each choice to its value |
-| 2026-11-24 | PENDING | Volume labels on separate rows; height arrow moved inside the ECF so labels don't cover it | diagram-interaction | user-testing | Longer labels overlapped |
+| 2026-11-24 | 35bde7b | Step 3 heading "Calculate serum osmolality"; lead points to the highlighted serum results | framing-scope | user-testing | Name the task; direct attention to the labs used |
+| 2026-11-24 | 35bde7b | Tap labels show reference values (osmolality < 275 / 275–295 / > 295; ECF < 14 L / 14 L / > 14 L) | diagram-interaction | user-testing | Link each choice to its value |
+| 2026-11-24 | 35bde7b | Volume labels on separate rows; height arrow moved inside the ECF so labels don't cover it | diagram-interaction | user-testing | Longer labels overlapped |
