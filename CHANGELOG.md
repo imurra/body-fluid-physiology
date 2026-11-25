@@ -44,4 +44,4 @@ Count with: `python3 tools/count_changes.py`
 | 2026-11-24 | 72d44e3 | Step 4 brain line rewritten, all 4 cases [4 texts] | framing-scope | user-testing | Feedback read as unclear and robotic; reasoning style from author's case 1 rewrites |
 | 2026-11-24 | 72d44e3 | Step 5 water, sodium and response feedback rewritten, all 4 cases [12 texts] | framing-scope | user-testing | Feedback read as unclear and robotic; reasoning style from author's case 1 rewrites |
 | 2026-11-24 | 72d44e3 | Case summaries: salt → sodium, 3 cases [3 texts] | framing-scope | user-testing | Feedback read as unclear and robotic; reasoning style from author's case 1 rewrites |
-| 2026-11-24 | PENDING | Case stories 2–4 rewritten as full sentences [3 texts] | framing-scope | user-testing | Match case 1; read like a clinical presentation |
+| 2026-11-24 | 73774a4 | Case stories 2–4 rewritten as full sentences [3 texts] | framing-scope | user-testing | Match case 1; read like a clinical presentation |
