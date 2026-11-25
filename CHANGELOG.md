@@ -34,6 +34,6 @@ Count with: `python3 tools/count_changes.py`
 | 2026-11-24 | 7ba28d6 | Step 5 heading "Interpret the kidney response" | framing-scope | user-testing | Name the task |
 | 2026-11-24 | 7ba28d6 | Kidney options: "Excreting excess water"; salt → sodium in question, options, feedback and urine guide | framing-scope | user-testing | Precise terms |
 | 2026-11-24 | 7ba28d6 | Kidney response options "Appropriate compensation" / "Inappropriate response"; feedback openings to match | framing-scope | user-testing | Clinical wording |
-| 2026-11-24 | PENDING | ECF volume tap labels: reference volumes removed | simplification | user-testing | Students judge ECF volume from the exam, not by calculating it |
-| 2026-11-24 | PENDING | Diagram key: "Width = volume in the compartments · Height = osmolality · Water moves until the heights match"; legend "ECF (interstitial and vascular)" | framing-scope | user-testing | Key describes the diagram, not clinical inferences |
-| 2026-11-24 | PENDING | "The ECF (green) appears once you assess its volume in step 2" moved into the figure (replaces "ECF: judged in step 2"); removed from below the figure | diagram-interaction | user-testing | Explain the empty ECF where the learner is looking |
+| 2026-11-24 | 7a709cd | ECF volume tap labels: reference volumes removed | simplification | user-testing | Students judge ECF volume from the exam, not by calculating it |
+| 2026-11-24 | 7a709cd | Diagram key: "Width = volume in the compartments · Height = osmolality · Water moves until the heights match"; legend "ECF (interstitial and vascular)" | framing-scope | user-testing | Key describes the diagram, not clinical inferences |
+| 2026-11-24 | 7a709cd | "The ECF (green) appears once you assess its volume in step 2" moved into the figure (replaces "ECF: judged in step 2"); removed from below the figure | diagram-interaction | user-testing | Explain the empty ECF where the learner is looking |
