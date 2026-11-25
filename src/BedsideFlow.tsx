@@ -246,24 +246,29 @@ const UrineGuide = () => (
 function Intro({ onStart, started }: { onStart: () => void; started: boolean }) {
   return (
     <section className="panel intro" aria-label="About this activity">
-      <h2>What this activity is for</h2>
-      <p>Serum sodium answers two different questions. The <b>amount</b> of sodium in the body sets <b>ECF volume</b>, which you judge from the vital signs and the exam; it tells you whether the <b>circulation</b> is affected. The sodium <b>concentration</b> (with glucose) sets <b>serum osmolality</b>, which decides whether water moves into or out of <b>cells</b>; brain cells show it first.</p>
-      <p>Each case starts where a clinician starts: from the vital signs and mental status, is the <b>circulation</b>, the <b>brain</b>, both or neither affected? The rest of the case works out why.</p>
-      <p>Each patient’s diagnosis is given. Your task is not to make the diagnosis. It is to work out what the disorder does to the body’s fluid compartments, and why.</p>
+      <h2>Purpose of this activity:</h2>
+      <p>Sodium disorders raise two related but distinct questions:</p>
+      <ul>
+        <li><b>What is happening to the extracellular fluid volume?</b> Total-body sodium content is a major determinant of <b>ECF volume</b>. Use the vital signs and physical examination to determine whether the effective circulation and tissue perfusion are affected.</li>
+        <li><b>What is happening to the cells?</b> Serum sodium concentration, interpreted with glucose, is a major determinant of <b>effective osmolality (tonicity)</b>. Tonicity determines whether water moves into or out of cells. The effects are often most apparent in the brain.</li>
+      </ul>
+      <p>Each case begins where clinical assessment begins: Do the vital signs suggest impaired circulation? Does the mental status suggest altered brain function? Is one affected, both, or neither? The remainder of the case explains the underlying fluid-compartment changes.</p>
+      <p>The diagnosis is provided. Your task is not to identify the disorder. Your task is to explain how it changes body-fluid volume and tonicity, how the kidneys respond, and which clinical findings demonstrate those changes.</p>
       <h3>Reading the diagram</h3>
       <ul>
-        <li>Cells (ICF, pink) are on the left; ECF (green) is on the right; the vertical line is the cell membrane.</li>
-        <li>Width is volume (L). Height is osmolality (mOsm/kg). Dashed outlines show normal: ICF 28 L, ECF 14 L, 290 mOsm/kg.</li>
-        <li>Water crosses the membrane until osmolality is equal on both sides.</li>
+        <li>The intracellular fluid compartment (<b>ICF</b>, pink) is on the left, and the extracellular fluid compartment (<b>ECF</b>, green) is on the right. The vertical line represents the cell membrane.</li>
+        <li><b>Width</b> represents volume in liters. <b>Height</b> represents osmolality in mOsm/kg.</li>
+        <li>Dashed outlines show normal values: ICF 28 L, ECF 14 L, and osmolality 290 mOsm/kg.</li>
+        <li>Water crosses cell membranes until effective osmolality is equal on both sides.</li>
       </ul>
       <h3>Each case has six steps</h3>
       <ol>
-        <li><b>What is affected</b>, from the vital signs and mental status: the circulation, the brain, both or neither?</li>
-        <li><b>ECF volume</b> from the exam: decreased, normal or increased?</li>
-        <li><b>Osmolality</b> from Na⁺, glucose and BUN.</li>
-        <li><b>Cells</b>: which way water moves, and what that means for the brain.</li>
-        <li><b>Kidney</b>: what the urine shows, and whether the response is appropriate.</li>
-        <li><b>Case summary</b>: what happened, and the findings that showed it.</li>
+        <li><b>Identify what is affected:</b> From the vital signs and mental status, determine whether the circulation, the brain, both, or neither is affected.</li>
+        <li><b>Assess ECF volume:</b> Use the clinical findings to classify ECF volume as decreased, normal, or increased.</li>
+        <li><b>Evaluate osmolality and tonicity:</b> Calculate serum osmolality using sodium, glucose, and BUN; then determine effective osmolality using sodium and glucose.</li>
+        <li><b>Predict the cellular response:</b> Determine which way water moves, how cell volume changes, and what this means for the brain.</li>
+        <li><b>Evaluate the kidney response:</b> Interpret the urine findings and decide whether the renal response is appropriate.</li>
+        <li><b>Summarize the case:</b> Explain what happened physiologically and identify the findings that support your explanation.</li>
       </ol>
       <p className="hint">Four cases, about 5 minutes each.</p>
       <div className="row"><button className="primary" onClick={onStart}>{started ? 'Back to the case' : 'Start case 1'}</button></div>
