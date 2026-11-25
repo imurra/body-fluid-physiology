@@ -20,8 +20,8 @@ const OSM_SNAPS: Record<-1 | 0 | 1, number> = { [-1]: 230, 0: NORMAL, 1: 350 };
 type Snap = -1 | 0 | 1;
 type Result = { aff?: boolean; vol?: boolean; osm?: boolean; icf?: boolean; water?: boolean; salt?: boolean; role?: boolean };
 const SCORED: [keyof Result, string][] = [
-  ['aff', 'What is affected'], ['vol', 'ECF volume'], ['osm', 'Osmolality'], ['icf', 'Cells: water movement'],
-  ['water', 'Kidney: water'], ['salt', 'Kidney: salt'], ['role', 'Kidney: response'],
+  ['aff', 'What is affected'], ['vol', 'ECF volume'], ['osm', 'Osmolality'], ['icf', 'Cells: net water shift'],
+  ['water', 'Kidney: water'], ['salt', 'Kidney: sodium'], ['role', 'Kidney: response'],
 ];
 
 const f0 = (n: number) => Math.round(n).toString();
@@ -186,7 +186,7 @@ function Diagram({ ecf, icf, osm, ecfOsm, showOsm, lines = [], preEcf, arrow, ar
         <path d={`M ${mem + 64} ${ay} l -14 -8 v 16 z`} />
         <text x={mem} y={ay - 12} textAnchor="middle" className="arrowtext">{word}water out</text>
       </g>}
-      {arrow === 0 && <text x={mem} y={ay} textAnchor="middle" className="arrowtext">{word}no water movement</text>}
+      {arrow === 0 && <text x={mem} y={ay} textAnchor="middle" className="arrowtext">{word}no net water shift</text>}
 
       <text x={mem - (icf * PX) / 2} y={bottom - 14} textAnchor="middle" className="lab icf-t">ICF (cells)</text>
       {ecf != null && <text x={mem + (ecf * PX) / 2} y={bottom - 14} textAnchor="middle" className="lab ecf-t">ECF</text>}
@@ -235,8 +235,8 @@ const UrineGuide = () => (
       <tr><td>Urine glucose present (e.g., 4+)</td><td>Excreting water: glucose holds water in the tubule (osmotic diuresis), so a high U<sub>osm</sub> does not mean ADH is acting</td></tr>
       <tr><td>U<sub>osm</sub> ≤ 100 mOsm/kg</td><td>Excreting water: maximally dilute urine (ADH suppressed or not acting)</td></tr>
       <tr><td>U<sub>osm</sub> &gt; 100 mOsm/kg</td><td>Retaining water: ADH is acting</td></tr>
-      <tr><td>U<sub>Na</sub> ≤ 30 mEq/L</td><td>Retaining salt: the kidney senses low effective volume</td></tr>
-      <tr><td>U<sub>Na</sub> &gt; 30 mEq/L</td><td>Excreting salt (normal volume, diuretics, or renal salt loss)</td></tr>
+      <tr><td>U<sub>Na</sub> ≤ 30 mEq/L</td><td>Retaining sodium: the kidney senses low effective volume</td></tr>
+      <tr><td>U<sub>Na</sub> &gt; 30 mEq/L</td><td>Excreting sodium (normal volume, diuretics, or renal sodium loss)</td></tr>
     </tbody></table>
     <p className="hint">Check for urine glucose first. Cutoffs from Spasovski et al., 2014.</p>
   </>
@@ -347,7 +347,7 @@ function Reference({ onClose }: { onClose: () => void }) {
       <ul>
         <li><b>Case 1:</b> isotonic loss decreases ECF volume but leaves ICF volume unchanged, because osmolality does not change.</li>
         <li><b>Case 2:</b> in SIADH, most retained water moves into cells, so ECF volume looks normal at the bedside.</li>
-        <li><b>Case 3:</b> in heart failure, low renal perfusion keeps the kidney retaining salt and water even though ECF volume is increased.</li>
+        <li><b>Case 3:</b> in heart failure, low renal perfusion keeps the kidney retaining sodium and water even though ECF volume is increased.</li>
         <li><b>Case 4:</b> very high glucose lowers Na⁺ while raising osmolality, so cells shrink.</li>
       </ul>
 
@@ -454,7 +454,7 @@ export default function BedsideFlow() {
   const pickIcf = (v: Snap) => { if (icfChecked) return; setIcfGuess(v); setFlash(f => f + 1); };
   const VOL_OPTS = [{ v: 'dry' as Vol, label: 'decreased', val: '< 14 L', at: 8 }, { v: 'euvolemic' as Vol, label: 'normal', val: '14 L', at: BASE.ecf }, { v: 'wet' as Vol, label: 'increased', val: '> 14 L', at: 20 }];
   const OSM_OPTS = [{ v: -1 as Snap, label: 'low', val: `< ${OSM_LO}`, at: OSM_SNAPS[-1] }, { v: 0 as Snap, label: 'normal', val: `${OSM_LO}–${OSM_HI}`, at: OSM_SNAPS[0] }, { v: 1 as Snap, label: 'high', val: `> ${OSM_HI}`, at: OSM_SNAPS[1] }];
-  const ICF_OPTS = [{ v: 1 as Snap, label: 'water into cells', at: 1 }, { v: 0 as Snap, label: 'no movement', at: 0 }, { v: -1 as Snap, label: 'water out of cells', at: -1 }];
+  const ICF_OPTS = [{ v: 1 as Snap, label: 'water into cells', at: 1 }, { v: 0 as Snap, label: 'no net water shift', at: 0 }, { v: -1 as Snap, label: 'water out of cells', at: -1 }];
   let diag: React.ReactNode;
   if (step === 0) diag = <Diagram max={scaleMax} ecf={null} icf={BASE.icf} osm={cellsStart} focus="labels" />;
   else if (step === 1 && vol == null)
@@ -624,18 +624,18 @@ export default function BedsideFlow() {
 
           {step === 3 && (
             <div className="stepbox">
-              <h3>4 · Cells</h3>
-              <p className="lead">Serum (ECF) osmolality is {osmLab}; the cells are still at normal ({cellsStart}).</p>
-              <p className="q">Which way does water move?</p>
+              <h3>4 · Predict the cellular response</h3>
+              <p className="lead">Serum (ECF) osmolality is {DIRWORD[osmDir]} ({osmLab}){osmDir !== 0 && <>; the cells are still at normal ({cellsStart})</>}.</p>
+              <p className="q">What is the net direction of water movement across the cell membrane?</p>
               {!icfChecked && <>
-                <p className="hint tapcue">Tap a yellow label on the diagram: water into cells, no movement, or water out of cells. Then Check.</p>
+                <p className="hint tapcue">Tap a yellow label on the diagram: water into cells, no net water shift, or water out of cells. Then Check.</p>
                 <button className="primary" disabled={icfGuess == null}
                   onClick={() => { setIcfChecked(true); record({ icf: icfGuess === truthIcfDir }); showShift('after'); }}>Check</button>
               </>}
               {icfChecked && <>
                 <Verdict label="Water" ok={icfGuess === truthIcfDir}>{truthIcfDir !== 0 && <>Water moves toward the higher osmolality. </>}{c.icfNote} ICF {f1(truth.icf)} L (normal 28).</Verdict>
                 <p className="brain"><b>Brain:</b> {c.brainNote}</p>
-                <p className="hint">{truthIcfDir === 0 ? 'No gradient, so no water moved.' : 'On the diagram, the dashed outline is the cells before water moved; the pink block is after.'}</p>
+                <p className="hint">{truthIcfDir === 0 ? 'On the diagram, the cells stay at their normal size.' : 'On the diagram, the dashed outline is the cells before water moved; the pink block is after.'}</p>
                 <div className="row"><button className="primary" onClick={() => go(4)}>Next: kidney</button>{resetBtn(3)}</div>
               </>}
             </div>
@@ -643,7 +643,7 @@ export default function BedsideFlow() {
 
           {step === 4 && (
             <div className="stepbox">
-              <h3>5 · Kidney</h3>
+              <h3>5 · Interpret the kidney response</h3>
               <p className="lead">Urine osmolality {c.urine.osm} mOsm/kg, urine Na⁺ {c.urine.na} mEq/L{c.urine.extra ? `, ${c.urine.extra.toLowerCase()}` : ''}.</p>
               <details className="hintbox">
                 <summary>Show how to read the urine</summary>
@@ -651,18 +651,18 @@ export default function BedsideFlow() {
               </details>
               <p className="q">Water: the kidney is</p>
               <Choice label="Water" value={water} disabled={kidneyChecked}
-                options={[{ v: 'holding' as const, text: 'Retaining water' }, { v: 'dumping' as const, text: 'Excreting water' }]} onPick={setWater} />
-              <p className="q">Salt: the kidney is</p>
-              <Choice label="Salt" value={salt} disabled={kidneyChecked}
-                options={[{ v: 'holding' as const, text: 'Retaining salt' }, { v: 'losing' as const, text: 'Excreting salt' }]} onPick={setSalt} />
+                options={[{ v: 'holding' as const, text: 'Retaining water' }, { v: 'dumping' as const, text: 'Excreting excess water' }]} onPick={setWater} />
+              <p className="q">Sodium: the kidney is</p>
+              <Choice label="Sodium" value={salt} disabled={kidneyChecked}
+                options={[{ v: 'holding' as const, text: 'Retaining sodium' }, { v: 'losing' as const, text: 'Excreting sodium' }]} onPick={setSalt} />
               <p className="q">The kidney’s response is:</p>
               <Choice label="Kidney's response" value={role} disabled={kidneyChecked}
-                options={[{ v: 'homeostatic' as const, text: 'Appropriate (homeostatic)' }, { v: 'problem' as const, text: 'Contributing to the problem' }]} onPick={setRole} />
+                options={[{ v: 'homeostatic' as const, text: 'Appropriate compensation' }, { v: 'problem' as const, text: 'Inappropriate response' }]} onPick={setRole} />
               {!kidneyChecked && <button className="primary" disabled={water == null || salt == null || role == null}
                 onClick={() => { setKidneyChecked(true); record({ water: water === c.water, salt: salt === c.salt, role: role === c.kidneyRole }); }}>Check</button>}
               {kidneyChecked && <>
                 <Verdict label="Water" ok={water === c.water}>{c.waterNote}</Verdict>
-                <Verdict label="Salt" ok={salt === c.salt}>{c.saltNote}</Verdict>
+                <Verdict label="Sodium" ok={salt === c.salt}>{c.saltNote}</Verdict>
                 <Verdict label="Response" ok={role === c.kidneyRole}>{c.roleNote}</Verdict>
                 <div className="row"><button className="primary" onClick={() => { go(5); setHistory(h => ({ ...h, [c.id]: result })); }}>Next: case summary</button>{resetBtn(4)}</div>
               </>}

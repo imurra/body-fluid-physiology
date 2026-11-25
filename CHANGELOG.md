@@ -27,3 +27,10 @@ Count with: `python3 tools/count_changes.py`
 | 2026-11-24 | 35bde7b | Step 3 heading "Calculate serum osmolality"; lead points to the highlighted serum results | framing-scope | user-testing | Name the task; direct attention to the labs used |
 | 2026-11-24 | 35bde7b | Tap labels show reference values (osmolality < 275 / 275–295 / > 295; ECF < 14 L / 14 L / > 14 L) | diagram-interaction | user-testing | Link each choice to its value |
 | 2026-11-24 | 35bde7b | Volume labels on separate rows; height arrow moved inside the ECF so labels don't cover it | diagram-interaction | user-testing | Longer labels overlapped |
+| 2026-11-24 | PENDING | Step 4 heading "Predict the cellular response"; question "What is the net direction of water movement across the cell membrane?" | framing-scope | user-testing | Name the task precisely |
+| 2026-11-24 | PENDING | "No movement" relabeled "no net water shift" (tap label, diagram text, score) | framing-scope | user-testing | Water still crosses; only the net shift is zero |
+| 2026-11-24 | PENDING | Step 4 lead states the serum osmolality category (low/normal/high) with its value | framing-scope | user-testing | Clearer starting point |
+| 2026-11-24 | PENDING | Case 1 step 4 feedback rewritten: equal tonicity, no gradient, isotonic volume contraction, no direct osmotic brain effect | framing-scope | user-testing | Name the pattern |
+| 2026-11-24 | PENDING | Step 5 heading "Interpret the kidney response" | framing-scope | user-testing | Name the task |
+| 2026-11-24 | PENDING | Kidney options: "Excreting excess water"; salt → sodium in question, options, feedback and urine guide | framing-scope | user-testing | Precise terms |
+| 2026-11-24 | PENDING | Kidney response options "Appropriate compensation" / "Inappropriate response"; feedback openings to match | framing-scope | user-testing | Clinical wording |
