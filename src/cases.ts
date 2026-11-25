@@ -95,7 +95,7 @@ export const CASES: Case[] = [
   {
     id: 'siadh',
     title: "Nausea in a smoker with a lung mass",
-    story: "66-year-old with a 50-pack-year smoking history. Chest CT shows a central lung mass; biopsy confirms small cell lung carcinoma. Admitted for staging. Mild nausea, otherwise well.",
+    story: "A 66-year-old with a 50-pack-year smoking history has a central lung mass on chest CT; biopsy confirms small cell lung carcinoma. The patient is admitted for staging and has mild nausea but is otherwise well.",
     dx: "Syndrome of inappropriate antidiuretic hormone secretion (SIADH) from small cell lung carcinoma.",
     tests: ["TSH and morning cortisol normal", "No diuretics or other drugs that cause hyponatremia"],
     danger: {"brain": "Mild nausea; alert, no confusion.", "circulation": "HR 78, BP 132/80."},
@@ -133,7 +133,7 @@ export const CASES: Case[] = [
   {
     id: 'hf',
     title: "Breathless with swollen legs",
-    story: "72-year-old with heart failure (echocardiogram 3 months ago: ejection fraction 25%). Ran out of prescribed furosemide 3 weeks ago. Two weeks of worsening breathlessness and leg swelling; now short of breath lying flat.",
+    story: "A 72-year-old with heart failure (ejection fraction 25% on an echocardiogram 3 months ago) ran out of prescribed furosemide 3 weeks ago. Breathlessness and leg swelling have worsened over two weeks, and the patient is now short of breath lying flat.",
     dx: "Acute decompensated heart failure with reduced ejection fraction (HFrEF).",
     tests: ["Chest X-ray: pulmonary vascular congestion, small bilateral pleural effusions", "BNP 1,450 pg/mL (raised)"],
     danger: {"brain": "Alert, mildly fatigued.", "circulation": "BP 104/70, HR 102, RR 24, SpO₂ 90% on room air; cool hands."},
@@ -170,7 +170,7 @@ export const CASES: Case[] = [
   {
     id: 'hhs',
     title: "Drowsy after a week of thirst",
-    story: "70-year-old with type 2 diabetes. A week of thirst and passing large volumes of urine. Now drowsy.",
+    story: "A 70-year-old with type 2 diabetes has had a week of increasing thirst and large urine volumes, and is now drowsy.",
     dx: "Hyperosmolar hyperglycemic state (HHS).",
     tests: ["Serum ketones negative; arterial pH 7.36 (no ketoacidosis)"],
     danger: {"brain": "Drowsy, slow to answer.", "circulation": "HR 116, BP 94/58."},
